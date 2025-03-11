@@ -1,8 +1,8 @@
-version: 1.0.1
+version: 1.0.3
 files:
-  - url: JW-Tools-Setup-1.0.1.exe
-    sha512: eCB6345zhOlPEGKbzA/9GgoOG5ry5qaC7OX9UfqSJOrHEykuZIJzY5DCVWi6e5oIeoRGzjgNn3Ro7XDAp1Ehzg==
-    size: 87402944
-path: JW-Tools-Setup-1.0.1.exe
-sha512: eCB6345zhOlPEGKbzA/9GgoOG5ry5qaC7OX9UfqSJOrHEykuZIJzY5DCVWi6e5oIeoRGzjgNn3Ro7XDAp1Ehzg==
-releaseDate: '2025-03-11T22:29:14.554Z'
+  - url: JW-Tools-1.0.3-arm64.exe
+    sha512: OTGMW3mWv8q7rU2OqJVGNeCn6dv/FXUL4TpKEvNUncVBSfeqvcYUcfecwfbWueIbLBefcYyDT+jZgceIq6f0aQ==
+    size: 87465745
+path: JW-Tools-1.0.3-arm64.exe
+sha512: OTGMW3mWv8q7rU2OqJVGNeCn6dv/FXUL4TpKEvNUncVBSfeqvcYUcfecwfbWueIbLBefcYyDT+jZgceIq6f0aQ==
+releaseDate: '2025-03-11T23:09:31.843Z'

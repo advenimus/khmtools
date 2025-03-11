@@ -40,6 +40,12 @@
               <p class="tool-description">Calculate total attendance from Zoom poll results</p>
             </button>
           </li>
+          <li>
+            <button id="media-launcher-btn" class="tool-button">
+              <span class="tool-name">Media Launcher</span>
+              <p class="tool-description">Coming soon</p>
+            </button>
+          </li>
           <!-- Additional tools will be added here -->
         </ul>
       </div>
@@ -53,7 +59,14 @@
         
         <!-- Zoom Attendance Calculator Tool -->
         <div id="zoom-attendance-calculator" class="tool-panel hidden">
-          <h2>Zoom Attendance Calculator</h2>
+          <div class="tool-header">
+            <h2>Zoom Attendance Calculator</h2>
+            <button id="help-button" class="help-button" aria-label="Help">?</button>
+          </div>
+          <div id="help-popup" class="help-popup hidden">
+            <p>To use this calculator: <br>1. Set up a poll in Zoom with options labeled as "1", "2", "3", etc. (representing the number of people watching).<br>2. After the meeting, enter the number of responses for each poll option.<br>3. Enter the number of phone connections (each counted as 1 person).<br>4. Click "Calculate" to get the total attendance.</p>
+            <button id="close-help" class="close-help">×</button>
+          </div>
           <p class="tool-instructions">Enter the number of responses for each poll option, then scroll down and hit calculate:</p>
           
           <form id="attendance-form">
@@ -106,6 +119,7 @@
 
             <div class="calculate-container">
               <button type="submit" class="calculate-btn">Calculate</button>
+              <br>
               <p class="hint-text">You can also press Enter to calculate</p>
             </div>
           </form>         
@@ -119,6 +133,14 @@
           </div>
           <button id="back-button" class="back-button">← Back to Calculator</button>
           <button id="calculate-again-button" class="calculate-again-btn">Calculate Again</button>
+        </div>
+        
+        <!-- Media Launcher Tool (Coming Soon) -->
+        <div id="media-launcher" class="tool-panel hidden">
+          <div class="tool-header">
+            <h2>Media Launcher</h2>
+          </div>
+          <p class="coming-soon">Coming Soon</p>
         </div>
       </div>
     </div>

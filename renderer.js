@@ -11,9 +11,13 @@ const calculateAgainButton = document.getElementById('calculate-again-button');
 
 const toolPanels = document.querySelectorAll('.tool-panel');
 const toolButtons = document.querySelectorAll('.tool-button');
+const mediaLauncherBtn = document.getElementById('media-launcher-btn');
 const updateNotification = document.getElementById('update-notification');
 const updateMessage = document.getElementById('update-message');
 const updateButton = document.getElementById('update-button');
+const dismissUpdateButton = document.getElementById('dismiss-update');
+const helpButton = document.getElementById('help-button');
+const helpPopup = document.getElementById('help-popup');
 
 // Show the selected tool panel and hide others
 function showToolPanel(panelId) {
@@ -40,6 +44,14 @@ zoomAttendanceBtn.addEventListener('click', () => {
   zoomAttendanceBtn.classList.add('active');
   showToolPanel('zoom-attendance-calculator');
 });
+
+// Media Launcher button
+if (mediaLauncherBtn) {
+  mediaLauncherBtn.addEventListener('click', () => {
+    mediaLauncherBtn.classList.add('active');
+    showToolPanel('media-launcher');
+  });
+}
 
 // Function to return to calculator view
 function returnToCalculator() {
@@ -122,10 +134,26 @@ toolButtons.forEach(button => {
   });
 });
 
+// Help button functionality
+if (helpButton) {
+  helpButton.addEventListener('click', () => {
+    helpPopup.classList.toggle('hidden');
+  });
+}
+
+// Close help button
+const closeHelpButton = document.getElementById('close-help');
+if (closeHelpButton) {
+  closeHelpButton.addEventListener('click', () => {
+    helpPopup.classList.add('hidden');
+  });
+}
+
 // Auto-update functionality
 if (window.electronAPI) {
   // When an update is available
   window.electronAPI.onUpdateAvailable((info) => {
+    console.log('Update available:', info);
     updateMessage.textContent = `Version ${info.version} is available!`;
     updateNotification.classList.remove('hidden');
   });
@@ -133,8 +161,36 @@ if (window.electronAPI) {
   // When an update has been downloaded
   window.electronAPI.onUpdateDownloaded((info) => {
     updateMessage.textContent = `Version ${info.version} is ready to install`;
+    console.log('Update downloaded:', info);
     updateButton.textContent = 'Restart and Install';
     updateNotification.classList.remove('hidden');
+  });
+
+  // When there's an update error
+  window.electronAPI.onUpdateError((err) => {
+    console.error('Update error:', err);
+    
+    // Show a notification with a link to the releases page
+    updateMessage.innerHTML = `Unable to download automatic update. <a href="#" id="releases-link" style="color: #fff; text-decoration: underline;">Visit releases page</a>`;
+    updateButton.style.display = 'none';
+    updateNotification.classList.remove('hidden');
+    
+    // Add event listener to the releases link after a short delay to ensure the element exists
+    setTimeout(() => {
+      const releasesLink = document.getElementById('releases-link');
+      if (releasesLink) {
+        releasesLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          window.electronAPI.openExternal('https://github.com/advenimus/jwtools/releases');
+        });
+      }
+    }, 100);
+    // You could also show this to the user if desired
+    
+    // Make sure the dismiss button works
+    if (dismissUpdateButton) {
+      dismissUpdateButton.style.display = 'block';
+    }
   });
 
   // Install update when button is clicked

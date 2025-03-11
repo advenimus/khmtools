@@ -41,6 +41,13 @@ npm run package-win     # Windows
 npm run package-linux   # Linux
 ```
 
+### macOS Security Note
+If you encounter security warnings when opening the application on macOS, you may need to remove the quarantine attribute by running:
+```
+xattr -cr '/path/to/JW Tools.app'
+```
+Replace `/path/to/JW Tools.app` with the actual path to the application.
+
 ## Usage
 1. Launch the application
 2. Select a tool from the sidebar menu

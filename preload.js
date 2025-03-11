@@ -12,7 +12,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // Expose ipcRenderer to the renderer process
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, shell } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   calculateAttendance: (pollResults) => ipcRenderer.send('calculate-attendance', pollResults),
@@ -21,5 +21,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Auto-update functions
   onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (_, info) => callback(info)),
   onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (_, info) => callback(info)),
-  installUpdate: () => ipcRenderer.send('install-update')
+  onUpdateError: (callback) => ipcRenderer.on('update-error', (_, err) => callback(err)),
+  installUpdate: () => ipcRenderer.send('install-update'),
+  openExternal: (url) => shell.openExternal(url)
 });

@@ -3,11 +3,12 @@ directories:
   buildResources: build
 appId: com.jwtools.app
 productName: JW Tools
+artifactName: JW-Tools-${version}-${arch}.${ext}
 publish:
   - provider: github
     owner: advenimus
 mac:
-  icon: assets/logo.png
+  icon: assets/mac_logo.icns
 win:
   icon: assets/logo.png
 linux:
