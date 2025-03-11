@@ -1,0 +1,369 @@
+/* Global Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Header Styles */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 1rem 0;
+  position: relative;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #ddd;
+  flex-wrap: wrap;
+}
+
+/* Update Notification Banner */
+.update-notification {
+  position: relative;
+  width: 100%;
+  background-color: #f0f5ff;
+  border-left: 5px solid #4a6da7;
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.update-button {
+  background-color: #4a6da7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  margin-left: 1rem;
+}
+
+.update-button:hover {
+  background-color: #3a5a8f;
+}
+
+.dismiss-button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-left: 1rem;
+}
+
+
+.logo-container {
+  margin-right: 1.5rem;
+}
+
+.logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 4px;
+}
+
+.title-container {
+  flex: 1;
+}
+
+h1 {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+  color: #4a6da7;
+}
+
+h2 {
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+  color: #4a6da7;
+}
+
+h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Tools Layout */
+.tools-container {
+  display: flex;
+  gap: 1.5rem;
+  min-height: 500px;
+  flex-wrap: wrap;
+}
+
+.tools-list {
+  flex: 1;
+  min-width: 250px;
+  max-width: 300px;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.tool-content {
+  flex: 3;
+  min-width: 300px;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Tool Content Panels */
+.welcome-screen,
+.tool-panel,
+.result-view {
+  width: 100%;
+  padding: 1.5rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Tool Buttons */
+.tools-list ul {
+  list-style-type: none;
+}
+
+.tool-button {
+  width: 100%;
+  text-align: left;
+  padding: 0.9rem;
+  margin-bottom: 0.625rem;
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tool-button:hover {
+  background-color: #e9f0ff;
+  border-color: #4a6da7;
+  transform: translateY(-2px);
+}
+
+.tool-button.active {
+  background-color: #4a6da7;
+  color: white;
+}
+
+.tool-name {
+  display: block;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+
+.tool-description {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.tool-button.active .tool-description {
+  color: #e0e0e0;
+}
+
+/* Zoom Attendance Calculator Tool */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+  margin-top: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.calculate-container {
+  text-align: center;
+  margin: 2rem 0 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+input[type="number"] {
+  width: 100%;
+  padding: 0.625rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.calculate-btn {
+  display: block;
+  width: 250px;
+  padding: 0.75rem 1.25rem;
+  background-color: #4a6da7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  margin: 0 auto 1rem;
+}
+
+.hint-text {
+  font-size: 0.85rem;
+  color: #777;
+  margin-top: -1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.calculate-btn:hover {
+  background-color: #3a5a8f;
+}
+
+.result-container {
+  padding: 1.25rem;
+  background-color: #f0f5ff;
+  border-radius: 6px;
+  border-left: 5px solid #4a6da7;
+  text-align: center;
+  margin: 3rem auto;
+  max-width: 400px;
+}
+
+.attendance-result {
+  font-size: 4rem;
+  font-weight: bold;
+  color: #4a6da7;
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.back-button {
+  display: block;
+  width: 220px;
+  max-width: 40%;
+  padding: 0.75rem 1.25rem;
+  background-color: #4a6da7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 3rem auto 3rem;
+  text-align: left;
+  float: left;
+  margin-left: 2rem;
+}
+
+.calculate-again-btn {
+  display: block;
+  width: 220px;
+  max-width: 40%;
+  padding: 0.75rem 1.25rem;
+  background-color: #4a6da7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease; 
+  margin: 3rem 2rem 3rem auto;
+  text-align: center;
+  float: right;
+}
+
+.back-button:hover, .calculate-again-btn:hover {
+  background-color: #3a5a8f;
+}
+
+/* Clear floats */
+.result-view::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Welcome Screen */
+.welcome-screen {
+  text-align: center;
+  padding: 4rem 1.25rem;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .logo-container {
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+  
+  .tools-container {
+    flex-direction: column;
+  }
+  
+  .tools-list {
+    max-width: 100%;
+  }
+  
+  .form-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+  
+  h2 {
+    font-size: 1.4rem;
+  }
+
+  .back-button, .calculate-again-btn {
+    float: none;
+    margin: 1rem auto;
+    width: 80%;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+}

@@ -1,0 +1,11 @@
+version: 1.0.1
+files:
+  - url: JW-Tools-1.0.1-arm64-mac.zip
+    sha512: Cx8oKH7SPQy56rU7Vl0S/IX1XfkHx3+gHFhtukYjDYS7wuS43VY1BCwNizVCfqgppjd4ZCAfOvkAjJMGjhQfYg==
+    size: 102101826
+  - url: JW-Tools-1.0.1-arm64.dmg
+    sha512: F4zJGDXmMTr97sI7g/qHGvpc93444BoWeDDL5lEaiZHo/OESaEDD81NnewzuQUHWTGKTupXeVo65VNDIxpnWTg==
+    size: 105779149
+path: JW-Tools-1.0.1-arm64-mac.zip
+sha512: Cx8oKH7SPQy56rU7Vl0S/IX1XfkHx3+gHFhtukYjDYS7wuS43VY1BCwNizVCfqgppjd4ZCAfOvkAjJMGjhQfYg==
+releaseDate: '2025-03-11T22:27:40.324Z'

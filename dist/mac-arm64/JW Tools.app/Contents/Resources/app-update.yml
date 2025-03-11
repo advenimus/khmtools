@@ -1,0 +1,4 @@
+owner: advenimus
+repo: jwtools
+provider: github
+updaterCacheDirName: jwtools-updater

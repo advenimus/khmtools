@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JW Tools</title>
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <!-- Update Notification Banner (hidden by default) -->
+      <div id="update-notification" class="update-notification hidden">
+        <span id="update-message">An update is available!</span>
+        <button id="update-button" class="update-button">Install Update</button>
+        <button id="dismiss-update" class="dismiss-button">×</button>
+      </div>
+      <div class="logo-container">
+        <!-- SVG Logo based on the provided image -->
+        <svg class="logo" width="60" height="60" viewBox="0 0 100 100">
+          <rect width="100" height="100" fill="#4a6da7"/>
+          <text x="20" y="45" fill="white" font-family="Arial" font-weight="bold" font-size="30">JW</text>
+          <text x="20" y="75" fill="white" font-family="Arial" font-weight="bold" font-size="22">.ORG</text>
+        </svg>
+      </div>
+      <div class="title-container">
+        <h1>JW Tools</h1>
+        <p>A collection of useful tools</p>
+      </div>
+    </header>
+    
+    <div class="tools-container">
+      <div class="tools-list">
+        <h2>Available Tools</h2>
+        <ul>
+          <li>
+            <button id="zoom-attendance-btn" class="tool-button">
+              <span class="tool-name">Zoom Attendance Calculator</span>
+              <p class="tool-description">Calculate total attendance from Zoom poll results</p>
+            </button>
+          </li>
+          <!-- Additional tools will be added here -->
+        </ul>
+      </div>
+      
+      <div id="tool-content" class="tool-content">
+        <!-- Tool content will be loaded here -->
+        <div id="welcome-screen" class="welcome-screen">
+          <h2>Welcome to JW Tools</h2>
+          <p>Please select a tool from the list to get started.</p>
+        </div>
+        
+        <!-- Zoom Attendance Calculator Tool -->
+        <div id="zoom-attendance-calculator" class="tool-panel hidden">
+          <h2>Zoom Attendance Calculator</h2>
+          <p class="tool-instructions">Enter the number of responses for each poll option, then scroll down and hit calculate:</p>
+          
+          <form id="attendance-form">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="option1">1 person:</label>
+                <input type="number" id="option1" min="0" value="0" class="number-input">
+              </div>
+              <div class="form-group">
+                <label for="option2">2 people:</label>
+                <input type="number" id="option2" min="0" value="0" class="number-input">
+              </div>
+              <div class="form-group">
+                <label for="option3">3 people:</label>
+                <input type="number" id="option3" min="0" value="0" class="number-input">
+              </div>
+              <div class="form-group">
+                <label for="option4">4 people:</label>
+                <input type="number" id="option4" min="0" value="0" class="number-input">
+              </div>
+              <div class="form-group">
+                <label for="option5">5 people:</label>
+                <input type="number" id="option5" min="0" value="0" class="number-input">
+              </div>
+              <div class="form-group">
+                <label for="option6">6 people:</label>
+                <input type="number" id="option6" min="0" value="0" class="number-input">
+              </div>
+              <div class="form-group">
+                <label for="option7">7 people:</label>
+                <input type="number" id="option7" min="0" value="0" class="number-input">
+              </div>
+              <div class="form-group">
+                <label for="option8">8 people:</label>
+                <input type="number" id="option8" min="0" value="0" class="number-input">
+              </div>
+              <div class="form-group">
+                <label for="option9">9 people:</label>
+                <input type="number" id="option9" min="0" value="0" class="number-input">
+              </div>
+              <div class="form-group">
+                <label for="option10">10 people:</label>
+                <input type="number" id="option10" min="0" value="0" class="number-input">
+              </div>
+              <div class="form-group">
+                <label for="optionPhone">Phone connections:</label>
+                <input type="number" id="optionPhone" min="0" value="0" class="number-input">
+              </div>
+            </div>
+
+            <div class="calculate-container">
+              <button type="submit" class="calculate-btn">Calculate</button>
+              <p class="hint-text">You can also press Enter to calculate</p>
+            </div>
+          </form>         
+        </div>
+        
+        <!-- Result View -->
+        <div id="result-view" class="result-view hidden">
+          <div class="result-container">
+            <h2>Total Attendance</h2>
+            <div id="attendance-result" class="attendance-result">0</div>
+          </div>
+          <button id="back-button" class="back-button">← Back to Calculator</button>
+          <button id="calculate-again-button" class="calculate-again-btn">Calculate Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="renderer.js"></script>
+</body>
+</html>
