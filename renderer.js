@@ -17,6 +17,7 @@ const updateMessage = document.getElementById('update-message');
 const updateButton = document.getElementById('update-button');
 const dismissUpdateButton = document.getElementById('dismiss-update');
 const helpButton = document.getElementById('help-button');
+const logoLink = document.getElementById('logo-link');
 const helpPopup = document.getElementById('help-popup');
 
 // Show the selected tool panel and hide others
@@ -50,6 +51,15 @@ if (mediaLauncherBtn) {
   mediaLauncherBtn.addEventListener('click', () => {
     mediaLauncherBtn.classList.add('active');
     showToolPanel('media-launcher');
+  });
+}
+
+// Logo click handler - open GitHub repository
+if (logoLink && window.electronAPI) {
+  logoLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    // This opens the URL in the user's default browser in a new window
+    window.electronAPI.openExternal('https://github.com/advenimus/jwtools');
   });
 }
 
@@ -181,6 +191,7 @@ if (window.electronAPI) {
       if (releasesLink) {
         releasesLink.addEventListener('click', (e) => {
           e.preventDefault();
+          // This opens the URL in the user's default browser in a new window
           window.electronAPI.openExternal('https://github.com/advenimus/jwtools/releases');
         });
       }
