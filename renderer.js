@@ -3,6 +3,9 @@ const zoomAttendanceBtn = document.getElementById('zoom-attendance-btn');
 const welcomeScreen = document.getElementById('welcome-screen');
 const zoomAttendanceCalculator = document.getElementById('zoom-attendance-calculator');
 const resultView = document.getElementById('result-view');
+const startZoom = document.getElementById('start-zoom');
+const startZoomBtn = document.getElementById('start-zoom-btn');
+const zoomSettingsPanel = document.getElementById('zoom-settings-panel');
 const attendanceForm = document.getElementById('attendance-form');
 const attendanceResult = document.getElementById('attendance-result');
 
@@ -19,6 +22,12 @@ const dismissUpdateButton = document.getElementById('dismiss-update');
 const helpButton = document.getElementById('help-button');
 const logoLink = document.getElementById('logo-link');
 const helpPopup = document.getElementById('help-popup');
+const appSettingsBtn = document.getElementById('app-settings-btn');
+const appSettingsPopup = document.getElementById('app-settings-popup');
+const closeAppSettings = document.getElementById('close-app-settings');
+const saveAppSettings = document.getElementById('save-app-settings');
+const defaultToolSelect = document.getElementById('default-tool');
+const alwaysMaximizeCheckbox = document.getElementById('always-maximize');
 
 // Show the selected tool panel and hide others
 function showToolPanel(panelId) {
@@ -46,6 +55,13 @@ zoomAttendanceBtn.addEventListener('click', () => {
   showToolPanel('zoom-attendance-calculator');
 });
 
+// Start Zoom button
+if (startZoomBtn) {
+  startZoomBtn.addEventListener('click', () => {
+    startZoomBtn.classList.add('active');
+    showToolPanel('start-zoom');
+  });
+}
 // Media Launcher button
 if (mediaLauncherBtn) {
   mediaLauncherBtn.addEventListener('click', () => {
@@ -212,5 +228,156 @@ if (window.electronAPI) {
   // Dismiss update notification
   document.getElementById('dismiss-update').addEventListener('click', () => {
     updateNotification.classList.add('hidden');
+  });
+}
+
+// Start Zoom Tool Functionality
+if (window.electronAPI) {
+  console.log('electronAPI is available');
+  const launchZoomBtn = document.getElementById('launch-zoom-btn');
+  const zoomSettingsBtn = document.getElementById('zoom-settings-btn');
+  const browseZoomPathBtn = document.getElementById('browse-zoom-path-btn');
+  const currentZoomPath = document.getElementById('current-zoom-path');
+  const zoomStatus = document.getElementById('zoom-status');
+
+  console.log('Launch Zoom Button:', launchZoomBtn);
+  console.log('Settings Button:', zoomSettingsBtn);
+  console.log('Browse Button:', browseZoomPathBtn);
+  console.log('Settings Panel:', zoomSettingsPanel);
+  
+  // Function to update the displayed Zoom path
+  async function updateZoomPathDisplay() {
+    try {
+      const zoomPath = await window.electronAPI.getZoomPath();
+      if (zoomPath) {
+        currentZoomPath.textContent = zoomPath;
+      } else {
+        currentZoomPath.textContent = 'No path configured';
+      }
+    } catch (error) {
+      console.error('Error getting Zoom path:', error);
+      currentZoomPath.textContent = 'Error getting Zoom path';
+    }
+  }
+  
+  // Initialize the Zoom path display when the tool is shown
+  startZoomBtn.addEventListener('click', updateZoomPathDisplay);
+  
+  // Toggle settings panel when settings button is clicked
+  zoomSettingsBtn.addEventListener('click', () => {
+    console.log('Settings button clicked, toggling panel');
+    zoomSettingsPanel.classList.toggle('hidden');
+    updateZoomPathDisplay();
+  });
+  
+  // Browse for Zoom application
+  browseZoomPathBtn.addEventListener('click', async () => {
+    try {
+      console.log('Browse button clicked');
+      const zoomPath = await window.electronAPI.browseForZoom();
+      if (zoomPath) {
+        currentZoomPath.textContent = zoomPath;
+        zoomStatus.textContent = 'Zoom path updated successfully';
+        zoomStatus.style.color = '#4a6da7';
+      }
+    } catch (error) {
+      console.error('Error browsing for Zoom:', error);
+      zoomStatus.textContent = 'Error selecting Zoom application';
+      zoomStatus.style.color = 'red';
+    }
+  });
+  
+  // Launch Zoom
+  launchZoomBtn.addEventListener('click', async () => {
+    console.log('Launch Zoom button clicked');
+    zoomStatus.textContent = 'Launching Zoom...';
+    const result = await window.electronAPI.launchZoom();
+    zoomStatus.textContent = result.message;
+    zoomStatus.style.color = result.success ? '#4a6da7' : 'red';
+  });
+} else {
+  console.error('electronAPI is not available');
+}
+
+// App Settings Functionality
+if (window.electronAPI) {
+  // Load app settings when the page loads
+  window.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const appSettings = await window.electronAPI.getAppSettings();
+      alwaysMaximizeCheckbox.checked = appSettings.alwaysMaximize || false;
+      defaultToolSelect.value = appSettings.defaultTool || 'welcome-screen';
+    } catch (error) {
+      console.error('Error loading app settings:', error);
+    }
+  });
+  
+  // Open settings popup
+  appSettingsBtn.addEventListener('click', () => {
+    appSettingsPopup.classList.remove('hidden');
+  });
+  
+  // Close settings popup
+  closeAppSettings.addEventListener('click', () => {
+    appSettingsPopup.classList.add('hidden');
+  });
+  
+  // Save settings
+  saveAppSettings.addEventListener('click', async () => {
+    try {
+      const settings = {
+        alwaysMaximize: alwaysMaximizeCheckbox.checked,
+        defaultTool: defaultToolSelect.value
+      };
+      
+      const result = await window.electronAPI.saveAppSettings(settings);
+      
+      if (result.success) {
+        // Show success message or visual feedback
+        const successMessage = document.createElement('div');
+        successMessage.className = 'settings-saved-message';
+        successMessage.textContent = 'Settings saved successfully!';
+        
+        const footer = document.querySelector('.app-settings-footer');
+        footer.appendChild(successMessage);
+        
+        // Remove the message after a few seconds
+        setTimeout(() => {
+          successMessage.remove();
+        }, 3000);
+        
+        // Close the popup
+        appSettingsPopup.classList.add('hidden');
+      }
+    } catch (error) {
+      console.error('Error saving app settings:', error);
+    }
+  });
+  
+  // Close settings popup when clicking outside
+  appSettingsPopup.addEventListener('click', (e) => {
+    if (e.target === appSettingsPopup) {
+      appSettingsPopup.classList.add('hidden');
+    }
+  });
+  
+  // Listen for the open-default-tool event from the main process
+  window.electronAPI.onOpenDefaultTool((toolId) => {
+    console.log('Opening default tool:', toolId);
+    
+    // Find the corresponding tool button
+    let toolButton;
+    if (toolId === 'zoom-attendance-calculator') {
+      toolButton = zoomAttendanceBtn;
+    } else if (toolId === 'start-zoom') {
+      toolButton = startZoomBtn;
+    } else if (toolId === 'media-launcher') {
+      toolButton = mediaLauncherBtn;
+    }
+    
+    // Click the tool button to open the tool
+    if (toolButton) {
+      toolButton.click();
+    }
   });
 }

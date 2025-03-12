@@ -1,14 +1,14 @@
 {
   "name": "jwtools",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A collection of useful tools for JW AV Brothers",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "build": "electron-builder build --mac --win --linux",
-    "package-mac": "electron-builder build --mac",
-    "package-win": "electron-builder build --win",
-    "package-linux": "electron-builder build --linux"
+    "start": "cross-env NODE_ENV=production electron .",
+    "dev": "cross-env NODE_ENV=development electron .",
+    "build": "electron-builder build --mac --win && electron-builder build --win --ia32",
+    "package-mac": "electron-builder build --mac --x64",
+    "package-win": "electron-builder build --win --x64 && electron-builder build --win --ia32"
   },
   "keywords": [],
   "author": "JW Tools Team",
@@ -22,6 +22,7 @@
     "electron-updater": "^6.3.9"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "electron": "^35.0.1",
     "electron-builder": "^25.1.8"
   },
@@ -42,10 +43,23 @@
       "icon": "assets/mac_logo.icns"
     },
     "win": {
-      "icon": "assets/logo.png"
+      "icon": "assets/jw-tools-icon.png",
+      "target": [
+        "nsis"
+      ],
+      "publisherName": "JW Tools Team",
+      "verifyUpdateCodeSignature": false,
+      "fileAssociations": []
     },
-    "linux": {
-      "icon": "assets/logo.png"
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true,
+      "shortcutName": "JW Tools"
     }
   }
 }

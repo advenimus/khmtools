@@ -19,16 +19,20 @@
       <div class="logo-container">
         <!-- Clickable SVG Logo that links to GitHub repository -->
         <a href="#" id="logo-link" title="Visit GitHub Repository">
-          <svg class="logo" width="60" height="60" viewBox="0 0 100 100">
-            <rect width="100" height="100" fill="#4a6da7"/>
-            <text x="20" y="45" fill="white" font-family="Arial" font-weight="bold" font-size="30">JW</text>
-            <text x="20" y="75" fill="white" font-family="Arial" font-weight="bold" font-size="22">.ORG</text>
-          </svg>
+          <img src="assets/jw-tools-icon.png" alt="JW Tools Logo" class="logo">
         </a>
       </div>
       <div class="title-container">
         <h1>JW Tools</h1>
         <p>A collection of useful tools</p>
+      </div>
+      <div class="app-settings-container">
+        <button id="app-settings-btn" class="app-settings-button" aria-label="Application Settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
       </div>
     </header>
     
@@ -40,6 +44,12 @@
             <button id="zoom-attendance-btn" class="tool-button">
               <span class="tool-name">Zoom Attendance Calculator</span>
               <p class="tool-description">Calculate total attendance from Zoom poll results</p>
+            </button>
+          </li>
+          <li>
+            <button id="start-zoom-btn" class="tool-button">
+              <span class="tool-name">Start Zoom</span>
+              <p class="tool-description">Launch Zoom application</p>
             </button>
           </li>
           <li>
@@ -137,6 +147,32 @@
           <button id="calculate-again-button" class="calculate-again-btn">Calculate Again</button>
         </div>
         
+        <!-- Start Zoom Tool -->
+        <div id="start-zoom" class="tool-panel hidden">
+          <div class="tool-header">
+            <h2>Start Zoom</h2>
+            <button id="zoom-settings-btn" class="settings-button" aria-label="Settings">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="zoom-content">
+            <p class="tool-instructions">Click the button below to launch Zoom:</p>
+            <button id="launch-zoom-btn" class="launch-zoom-btn">Launch Zoom</button>
+            <p id="zoom-status" class="zoom-status"></p>
+          </div>
+          
+          <!-- Zoom Settings Panel -->
+          <div id="zoom-settings-panel" class="settings-panel hidden">
+            <h3>Zoom Settings</h3>
+            <p>Configure the path to your Zoom application:</p>
+            <button id="browse-zoom-path-btn" class="browse-btn">Browse for Zoom</button>
+            <p id="current-zoom-path" class="current-path">No path configured</p>
+          </div>
+        </div>
+        
         <!-- Media Launcher Tool (Coming Soon) -->
         <div id="media-launcher" class="tool-panel hidden">
           <div class="tool-header">
@@ -144,6 +180,41 @@
           </div>
           <p class="coming-soon">Coming Soon</p>
         </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Application Settings Popup -->
+  <div id="app-settings-popup" class="app-settings-popup hidden">
+    <div class="app-settings-content">
+      <div class="app-settings-header">
+        <h2>Application Settings</h2>
+        <button id="close-app-settings" class="close-app-settings">×</button>
+      </div>
+      <div class="app-settings-body">
+        <div class="settings-option">
+          <div class="settings-group-title">Window Options</div>
+          <div class="checkbox-wrapper">
+            <input type="checkbox" id="always-maximize" name="always-maximize">
+            <label for="always-maximize">Always Open Maximized</label>
+          </div>
+          <p class="settings-description">When enabled, the application will always open maximized to fill the screen.</p>
+        </div>
+        
+        <div class="settings-option">
+          <div class="settings-group-title">Startup Options</div>
+          <label for="default-tool">Default open to tool:</label>
+          <select id="default-tool" name="default-tool" class="settings-select">
+            <option value="welcome-screen">Welcome Screen</option>
+            <option value="zoom-attendance-calculator">Zoom Attendance Calculator</option>
+            <option value="start-zoom">Start Zoom</option>
+            <option value="media-launcher">Media Launcher</option>
+          </select>
+          <p class="settings-description">Select which tool should automatically open when the application launches.</p>
+        </div>
+      </div>
+      <div class="app-settings-footer">
+        <button id="save-app-settings" class="save-app-settings">Save Settings</button>
       </div>
     </div>
   </div>

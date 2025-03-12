@@ -23,5 +23,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (_, info) => callback(info)),
   onUpdateError: (callback) => ipcRenderer.on('update-error', (_, err) => callback(err)),
   installUpdate: () => ipcRenderer.send('install-update'),
-  openExternal: (url) => shell.openExternal(url)
+  onOpenDefaultTool: (callback) => ipcRenderer.on('open-default-tool', (_, toolId) => callback(toolId)),
+  openExternal: (url) => shell.openExternal(url),
+  
+  // Zoom launcher functions
+  getZoomPath: () => ipcRenderer.invoke('get-zoom-path'),
+  browseForZoom: () => ipcRenderer.invoke('browse-for-zoom'),
+  launchZoom: () => ipcRenderer.invoke('launch-zoom'),
+  
+  // App settings functions
+  saveAppSettings: (settings) => ipcRenderer.invoke('save-app-settings', settings),
+  getAppSettings: () => ipcRenderer.invoke('get-app-settings')
 });

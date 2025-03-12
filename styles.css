@@ -88,9 +88,11 @@ header {
 }
 
 .logo {
-  width: 45px;
-  height: 45px;
+  width: 50px;
+  height: 50px;
   border-radius: 4px;
+  object-fit: contain;
+  display: block;
 }
 
 .title-container {
@@ -107,6 +109,217 @@ h1 {
 .title-container p {
   font-size: 0.9rem;
   color: #666;
+}
+
+/* App Settings Button */
+.app-settings-container {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.app-settings-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #4a6da7;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.app-settings-button:hover {
+  background-color: #3a5a8f;
+}
+
+/* App Settings Popup */
+.app-settings-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.app-settings-content {
+  width: 500px;
+  max-width: 90%;
+  max-height: 90%;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(20px);
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+.app-settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #eee;
+  background-color: #f9f9f9;
+}
+
+.close-app-settings {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.close-app-settings:hover {
+  color: #333;
+  transform: rotate(90deg);
+}
+
+.app-settings-body {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.settings-option {
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  transition: box-shadow 0.3s ease;
+  border-left: 3px solid #4a6da7;
+}
+
+.settings-option:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #f5f8ff;
+}
+
+.settings-option input[type="checkbox"] {
+  margin-right: 0.5rem;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #4a6da7;
+}
+
+.settings-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: #fff;
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.settings-select:focus {
+  border-color: #4a6da7;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(74, 109, 167, 0.2);
+}
+
+.settings-option label {
+  display: flex;
+  align-items: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.settings-description {
+  margin-top: 0.5rem;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.settings-group-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #4a6da7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.85rem;
+}
+
+.app-settings-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #eee;
+  text-align: right;
+  background-color: #f9f9f9;
+}
+
+.save-app-settings {
+  padding: 0.75rem 1.5rem;
+  background-color: #4a6da7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.save-app-settings:hover {
+  background-color: #3a5a8f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.settings-saved-message {
+  display: inline-block;
+  margin-right: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 4px;
+  font-weight: bold;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 h2 {
@@ -186,6 +399,81 @@ h3 {
 }
 
 /* Help Popup */
+.settings-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #4a6da7;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.settings-button:hover {
+  background-color: #3a5a8f;
+}
+
+.settings-panel {
+  background-color: #f0f5ff;
+  border-left: 5px solid #4a6da7;
+  border-radius: 6px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  line-height: 1.5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.browse-btn {
+  display: inline-block;
+  padding: 0.6rem 1rem;
+  background-color: #4a6da7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  margin: 1rem 0;
+}
+
+.browse-btn:hover {
+  background-color: #3a5a8f;
+}
+
+.current-path {
+  font-family: monospace;
+  background-color: #f1f1f1;
+  padding: 0.5rem;
+  border-radius: 4px;
+  word-break: break-all;
+  margin-top: 0.5rem;
+}
+
+.launch-zoom-btn {
+  display: block;
+  width: 250px;
+  padding: 1rem 1.5rem;
+  background-color: #0E71EB;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  margin: 2rem auto;
+  text-align: center;
+}
+
+.launch-zoom-btn:hover {
+  background-color: #0A5BC2;
+}
+
 .help-popup {
   position: relative;
   background-color: #f0f5ff;
@@ -258,6 +546,14 @@ h3 {
 
 .tool-button.active .tool-description {
   color: #e0e0e0;
+}
+
+.zoom-status {
+  text-align: center;
+  margin-top: 1rem;
+  font-weight: bold;
+  font-size: 1rem;
+  min-height: 1.5rem;
 }
 
 /* Zoom Attendance Calculator Tool */
@@ -446,5 +742,10 @@ input[type="number"] {
   .form-grid {
     grid-template-columns: 1fr;
     gap: 0.3rem;
+  }
+  
+  .app-settings-content {
+    width: 95%;
+    height: 95%;
   }
 }
