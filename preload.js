@@ -33,5 +33,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // App settings functions
   saveAppSettings: (settings) => ipcRenderer.invoke('save-app-settings', settings),
-  getAppSettings: () => ipcRenderer.invoke('get-app-settings')
+  getAppSettings: () => ipcRenderer.invoke('get-app-settings'),
+  resetAllSettings: () => ipcRenderer.invoke('reset-all-settings'),
+  
+  // Media Launcher functions
+  launchOBS: () => ipcRenderer.invoke('launch-obs'),
+  getOBSPath: () => ipcRenderer.invoke('get-obs-path'),
+  browseForOBS: () => ipcRenderer.invoke('browse-for-obs'),
+  launchMediaManager: () => ipcRenderer.invoke('launch-media-manager'),
+  getMediaManagerPath: () => ipcRenderer.invoke('get-media-manager-path'),
+  browseForMediaManager: () => ipcRenderer.invoke('browse-for-media-manager'),
+  getMediaZoomPath: () => ipcRenderer.invoke('get-media-zoom-path'),
+  browseForMediaZoom: () => ipcRenderer.invoke('browse-for-media-zoom'),
+  launchMediaZoom: () => ipcRenderer.invoke('launch-media-zoom'),
+  getCustomMessageSettings: () => ipcRenderer.invoke('get-custom-message-settings'),
+  saveCustomMessageSettings: (settings) => ipcRenderer.invoke('save-custom-message-settings', settings),
+  getPlatform: () => process.platform
 });

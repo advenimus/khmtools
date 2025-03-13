@@ -55,7 +55,7 @@
           <li>
             <button id="media-launcher-btn" class="tool-button">
               <span class="tool-name">Media Launcher</span>
-              <p class="tool-description">Coming soon</p>
+              <p class="tool-description">Launch all media presentationt tools for hosting</p>
             </button>
           </li>
           <!-- Additional tools will be added here -->
@@ -173,12 +173,53 @@
           </div>
         </div>
         
-        <!-- Media Launcher Tool (Coming Soon) -->
+        <!-- Media Launcher Tool -->
         <div id="media-launcher" class="tool-panel hidden">
           <div class="tool-header">
-            <h2>Media Launcher</h2>
+            <h2>Zoom Media Launcher</h2>
+            <button id="media-settings-btn" class="settings-button" aria-label="Media Settings">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </button>
           </div>
-          <p class="coming-soon">Coming Soon</p>
+          <div class="media-launcher-content">
+            <p class="tool-instructions">Launch all your meeting media tools with one click:</p>
+            
+            <div class="launch-sequence">
+              <ul class="launch-steps">
+                <li id="onedrive-step"><span class="step-text">Custom message</span></li>
+                <li id="obs-step"><span class="step-text">Launch OBS with virtual camera</span></li>
+                <li id="media-manager-step"><span class="step-text">Launch Meeting Media Manager</span></li>
+                <li id="zoom-step"><span class="step-text">Launch Zoom</span></li>
+              </ul>
+            </div>
+            
+            <button id="launch-media-btn" class="launch-media-btn">Launch Media Tools</button>
+            
+            <!-- Progress container (hidden by default) -->
+            <div id="launch-progress-container" class="launch-progress-container hidden">
+              <div class="progress-bar-container">
+                <div id="launch-progress-bar" class="progress-bar"></div>
+              </div>
+              <p id="launch-status" class="launch-status">Preparing to launch...</p>
+            </div>
+            
+            <!-- OneDrive popup (hidden by default) -->
+            <div id="onedrive-popup" class="onedrive-popup hidden">
+              <div class="onedrive-popup-content">
+                <h3>Custom Message</h3>
+                <p>Your custom message will appear here.</p>
+                <p></p>
+                <div class="onedrive-popup-progress">
+                  <div class="onedrive-popup-progress-bar"></div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Media Settings Panel -->
+          </div>
         </div>
       </div>
     </div>
@@ -212,6 +253,13 @@
           </select>
           <p class="settings-description">Select which tool should automatically open when the application launches.</p>
         </div>
+        
+        <div class="settings-option reset-settings-option">
+          <div class="settings-group-title">Reset Settings</div>
+          <p class="settings-description">Reset all settings for all tools back to their default values.</p>
+          <button id="reset-settings-btn" class="reset-settings-btn">Reset to Defaults</button>
+          <div id="reset-confirmation" class="reset-confirmation hidden">Double-click to confirm reset</div>
+        </div>
       </div>
       <div class="app-settings-footer">
         <button id="save-app-settings" class="save-app-settings">Save Settings</button>
@@ -219,6 +267,69 @@
     </div>
   </div>
   
+  <!-- Media Settings Popup -->
+  <div id="media-settings-popup" class="app-settings-popup hidden">
+    <div class="app-settings-content">
+      <div class="app-settings-header">
+        <h2>Media Launcher Settings</h2>
+        <button id="close-media-settings-btn" class="close-app-settings">×</button>
+      </div>
+      <div class="app-settings-body">
+        <p>Configure the paths to your media applications:</p>
+        
+        <div class="settings-option">
+          <div class="settings-group-title">OBS Studio</div>
+          <button id="browse-obs-path-btn" class="browse-btn">Browse for OBS</button>
+          <p id="current-obs-path" class="current-path">Using default path</p>
+        </div>
+        
+        <div class="settings-option">
+          <div class="settings-group-title">Meeting Media Manager</div>
+          <button id="browse-media-manager-path-btn" class="browse-btn">Browse for Meeting Media Manager</button>
+          <p id="current-media-manager-path" class="current-path">Using default path</p>
+        </div>
+        
+        <div class="settings-option">
+          <div class="settings-group-title">Zoom</div>
+          <button id="browse-media-zoom-path-btn" class="browse-btn">Browse for Zoom</button>
+          <p id="current-media-zoom-path" class="current-path">Using default path</p>
+        </div>
+        
+        <div class="settings-option">
+          <div class="settings-group-title">Custom Message Settings</div>
+          <div class="checkbox-wrapper">
+            <input type="checkbox" id="custom-message-enabled" name="custom-message-enabled">
+            <label for="custom-message-enabled">Enable Custom Message</label>
+          </div>
+          <p class="settings-description">When enabled, a custom message will be displayed instead of the default OneDrive sync check.</p>
+          
+          <div id="custom-message-settings" class="custom-message-settings">
+            <div class="form-group">
+              <label for="custom-message-title">Title:</label>
+              <input type="text" id="custom-message-title" class="settings-input" placeholder="Enter custom title">
+            </div>
+            
+            <div class="form-group">
+              <label for="custom-message-text">Message:</label>
+              <textarea id="custom-message-text" class="settings-textarea" placeholder="Enter custom message text"></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label for="custom-message-time">Display Time (seconds):</label>
+              <input type="number" id="custom-message-time" class="settings-input" min="1" max="30" value="5">
+            </div>
+          </div>
+        </div>
+        
+      </div>
+      <div class="app-settings-footer">
+        <p id="media-settings-status" class="settings-status"></p>
+        <button id="save-media-settings-btn" class="save-app-settings">Close</button>
+      </div>
+    </div>
+  </div>
+  
   <script src="renderer.js"></script>
 </body>
+</html>
 </html>

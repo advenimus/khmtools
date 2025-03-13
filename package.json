@@ -1,12 +1,12 @@
 {
   "name": "jwtools",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A collection of useful tools for JW AV Brothers",
   "main": "main.js",
   "scripts": {
     "start": "cross-env NODE_ENV=production electron .",
     "dev": "cross-env NODE_ENV=development electron .",
-    "build": "electron-builder build --mac --win && electron-builder build --win --ia32",
+    "build": "electron-builder build --mac && electron-builder build --win --x64 && electron-builder build --win --ia32",
     "package-mac": "electron-builder build --mac --x64",
     "package-win": "electron-builder build --win --x64 && electron-builder build --win --ia32"
   },

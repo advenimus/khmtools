@@ -26,6 +26,8 @@ const appSettingsBtn = document.getElementById('app-settings-btn');
 const appSettingsPopup = document.getElementById('app-settings-popup');
 const closeAppSettings = document.getElementById('close-app-settings');
 const saveAppSettings = document.getElementById('save-app-settings');
+const resetSettingsBtn = document.getElementById('reset-settings-btn');
+const resetConfirmation = document.getElementById('reset-confirmation');
 const defaultToolSelect = document.getElementById('default-tool');
 const alwaysMaximizeCheckbox = document.getElementById('always-maximize');
 
@@ -353,6 +355,45 @@ if (window.electronAPI) {
       console.error('Error saving app settings:', error);
     }
   });
+
+  // Reset settings functionality
+  let resetClickTimer = null;
+  let resetClickCount = 0;
+
+  resetSettingsBtn.addEventListener('click', async () => {
+    resetClickCount++;
+    
+    if (resetClickCount === 1) {
+      // First click - show confirmation
+      resetSettingsBtn.classList.add('confirm');
+      resetConfirmation.classList.remove('hidden');
+      
+      // Reset after 3 seconds if no second click
+      resetClickTimer = setTimeout(() => {
+        resetClickCount = 0;
+        resetSettingsBtn.classList.remove('confirm');
+        resetConfirmation.classList.add('hidden');
+      }, 3000);
+    } else if (resetClickCount === 2) {
+      // Second click - perform reset
+      clearTimeout(resetClickTimer);
+      resetClickCount = 0;
+      resetSettingsBtn.classList.remove('confirm');
+      resetConfirmation.classList.add('hidden');
+      
+      try {
+        const result = await window.electronAPI.resetAllSettings();
+        if (result.success) {
+          // Reload settings to show defaults
+          const appSettings = await window.electronAPI.getAppSettings();
+          alwaysMaximizeCheckbox.checked = appSettings.alwaysMaximize || false;
+          defaultToolSelect.value = appSettings.defaultTool || 'welcome-screen';
+        }
+      } catch (error) {
+        console.error('Error resetting settings:', error);
+      }
+    }
+  });
   
   // Close settings popup when clicking outside
   appSettingsPopup.addEventListener('click', (e) => {
@@ -378,6 +419,386 @@ if (window.electronAPI) {
     // Click the tool button to open the tool
     if (toolButton) {
       toolButton.click();
+    }
+  });
+  
+  // Media Launcher Tool Functionality
+  const launchMediaBtn = document.getElementById('launch-media-btn');
+  const launchProgressContainer = document.getElementById('launch-progress-container');
+  const launchProgressBar = document.getElementById('launch-progress-bar');
+  const launchStatus = document.getElementById('launch-status');
+  const onedrivePopup = document.getElementById('onedrive-popup');
+  const onedrivePopupTitle = document.querySelector('.onedrive-popup-content h3');
+  const onedrivePopupMessage = document.querySelector('.onedrive-popup-content p');
+  const onedriveStep = document.getElementById('onedrive-step');
+  
+  const mediaSettingsBtn = document.getElementById('media-settings-btn');
+  const mediaSettingsPopup = document.getElementById('media-settings-popup');
+  const saveMediaSettingsBtn = document.getElementById('save-media-settings-btn');
+  const closeMediaSettingsBtn = document.getElementById('close-media-settings-btn');
+  const browseOBSPathBtn = document.getElementById('browse-obs-path-btn');
+  const browseMediaManagerPathBtn = document.getElementById('browse-media-manager-path-btn');
+  const browseMediaZoomPathBtn = document.getElementById('browse-media-zoom-path-btn');
+  const currentOBSPath = document.getElementById('current-obs-path');
+  const currentMediaManagerPath = document.getElementById('current-media-manager-path');
+  const currentMediaZoomPath = document.getElementById('current-media-zoom-path');
+  const customMessageEnabled = document.getElementById('custom-message-enabled');
+  const customMessageSettings = document.getElementById('custom-message-settings');
+  const customMessageTitle = document.getElementById('custom-message-title');
+  const customMessageText = document.getElementById('custom-message-text');
+  const customMessageTime = document.getElementById('custom-message-time');
+  
+  // Platform detection
+  const platform = window.electronAPI.getPlatform();
+  console.log('Detected platform:', platform);
+  
+  // Function to update progress bar
+  function updateProgress(percent, statusText) {
+    launchProgressBar.style.width = `${percent}%`;
+    launchStatus.textContent = statusText;
+  }
+  
+  // Function to mark a step as completed
+  function markStepCompleted(stepId) {
+    const step = document.getElementById(stepId);
+    if (step) {
+      step.classList.add('completed');
+    }
+  }
+  
+  // Function to show the custom message popup
+  async function showOnedrivePopup() {
+    // Get custom message settings
+    const customSettings = await window.electronAPI.getCustomMessageSettings();
+    
+    // Determine if we should use custom message
+    const useCustomMessage = customSettings.enabled && 
+                            (customSettings.title.trim() !== '' || 
+                             customSettings.message.trim() !== '');
+    
+    // If custom message is enabled and has content, show it
+    if (useCustomMessage) {
+      // Set popup content based on settings
+      onedrivePopupTitle.textContent = customSettings.title || 'Custom Message';
+      onedrivePopupMessage.textContent = customSettings.message || '';
+      onedriveStep.querySelector('.step-text').textContent = customSettings.title || 'Custom Message';
+      
+      return new Promise(resolve => {
+        onedrivePopup.classList.remove('hidden');
+        
+        const progressBar = document.querySelector('.onedrive-popup-progress-bar');
+        progressBar.style.width = '0%';
+        
+        // Animate progress bar
+        setTimeout(() => {
+          progressBar.style.width = '100%';
+        }, 100);
+        
+        // Get display time (default to 5000ms if not set)
+        const displayTime = customSettings.displayTime || 5000;
+        
+        // Close popup and resolve promise after the specified time
+        setTimeout(() => {
+          onedrivePopup.classList.add('hidden');
+          resolve();
+          markStepCompleted('onedrive-step');
+        }, displayTime);
+      });
+    } else {
+      // If custom message is disabled or empty, skip this step entirely
+      // Hide the OneDrive step in the launch sequence
+      onedriveStep.style.display = 'none';
+      
+      // Immediately resolve the promise to continue with the next step
+      return Promise.resolve();
+    }
+  }
+  
+  // Function to launch OBS
+  async function launchOBS() {
+    updateProgress(40, 'Launching OBS with virtual camera...');
+    
+    try {
+      const result = await window.electronAPI.launchOBS();
+      if (!result.success) {
+        updateProgress(40, `Error: ${result.message}`);
+        return false;
+      }
+      markStepCompleted('obs-step');
+      return true;
+    } catch (error) {
+      console.error('Error launching OBS:', error);
+      updateProgress(40, 'Error launching OBS');
+      return false;
+    }
+  }
+  
+  // Function to launch Meeting Media Manager
+  async function launchMediaManager() {
+    updateProgress(70, 'Launching Meeting Media Manager...');
+    
+    try {
+      const result = await window.electronAPI.launchMediaManager();
+      if (!result.success) {
+        updateProgress(70, `Error: ${result.message}`);
+        return false;
+      }
+      markStepCompleted('media-manager-step');
+      return true;
+    } catch (error) {
+      console.error('Error launching Meeting Media Manager:', error);
+      updateProgress(70, 'Error launching Meeting Media Manager');
+      return false;
+    }
+  }
+  
+  // Function to launch Zoom
+  async function launchZoom() {
+    updateProgress(90, 'Launching Zoom...');
+    
+    try {
+      const result = await window.electronAPI.launchMediaZoom();
+      if (!result.success) {
+        updateProgress(90, `Error: ${result.message}`);
+        return false;
+      }
+      markStepCompleted('zoom-step');
+      return true;
+    } catch (error) {
+      console.error('Error launching Zoom:', error);
+      updateProgress(90, 'Error launching Zoom');
+      return false;
+    }
+  }
+  
+  // Media Settings Panel Functionality
+  
+  // Function to update the displayed paths
+  async function updatePathDisplays() {
+    try {
+      // Update OBS path
+      const obsPath = await window.electronAPI.getOBSPath();
+      if (obsPath) {
+        currentOBSPath.textContent = obsPath;
+      } else {
+        currentOBSPath.textContent = 'Using default path';
+      }
+      
+      // Update Media Manager path
+      const mediaManagerPath = await window.electronAPI.getMediaManagerPath();
+      if (mediaManagerPath) {
+        currentMediaManagerPath.textContent = mediaManagerPath;
+      } else {
+        currentMediaManagerPath.textContent = 'Using default path';
+      }
+      
+      // Update Zoom path
+      const zoomPath = await window.electronAPI.getMediaZoomPath();
+      if (zoomPath) {
+        currentMediaZoomPath.textContent = zoomPath;
+      } else {
+        currentMediaZoomPath.textContent = 'Using default path';
+      }
+    } catch (error) {
+      console.error('Error updating path displays:', error);
+    }
+  }
+  
+  // Function to load custom message settings
+  async function loadCustomMessageSettings() {
+    try {
+      const settings = await window.electronAPI.getCustomMessageSettings();
+      
+      // Update UI with settings
+      customMessageEnabled.checked = settings.enabled || false;
+      customMessageTitle.value = settings.title || '';
+      customMessageText.value = settings.message || '';
+      customMessageTime.value = Math.floor((settings.displayTime || 5000) / 1000);
+
+      // Update the visibility of the custom message step in the launch steps list
+      if (settings.enabled && (settings.title.trim() !== '' || settings.message.trim() !== '')) {
+        onedriveStep.style.display = '';
+      } else {
+        onedriveStep.style.display = 'none';
+      }
+      
+      // Show/hide custom message settings based on enabled state
+      if (settings.enabled) {
+        customMessageSettings.classList.remove('hidden');
+      } else {
+        customMessageSettings.classList.add('hidden');
+      }
+    } catch (error) {
+      console.error('Error loading custom message settings:', error);
+    }
+  }
+  
+  // Toggle settings panel when settings button is clicked
+  mediaSettingsBtn.addEventListener('click', () => {
+    mediaSettingsPopup.classList.remove('hidden');
+    updatePathDisplays(); 
+    
+    // Load custom message settings and update UI
+    loadCustomMessageSettings().then(() => {
+      // Ensure the custom message step visibility is updated
+      const isEnabled = customMessageEnabled.checked;
+      const hasContent = customMessageTitle.value.trim() !== '' || customMessageText.value.trim() !== '';
+      onedriveStep.style.display = (isEnabled && hasContent) ? '' : 'none';
+    });
+    loadCustomMessageSettings();
+  });
+  
+  // Close settings popup with close button
+  closeMediaSettingsBtn.addEventListener('click', () => {
+    mediaSettingsPopup.classList.add('hidden');
+  });
+  
+  // Close settings popup with save button
+  saveMediaSettingsBtn.addEventListener('click', () => {
+    // Save custom message settings
+    const settings = {
+      enabled: customMessageEnabled.checked,
+      title: customMessageTitle.value,
+      message: customMessageText.value,
+      displayTime: parseInt(customMessageTime.value) * 1000 // Convert seconds to milliseconds
+    };
+    
+    window.electronAPI.saveCustomMessageSettings(settings)
+      .then(result => {
+        if (result && result.success) {
+          document.getElementById('media-settings-status').textContent = 'Settings saved successfully';
+          document.getElementById('media-settings-status').style.color = '#4a6da7';
+        }
+      })
+      .catch(error => console.error('Error saving custom message settings:', error));
+    
+    // Update the visibility of the custom message step based on new settings
+    onedriveStep.style.display = (settings.enabled && (settings.title.trim() !== '' || settings.message.trim() !== '')) ? '' : 'none';
+    
+    mediaSettingsPopup.classList.add('hidden');
+  });
+  
+  // Close settings popup when clicking outside
+  mediaSettingsPopup.addEventListener('click', (e) => {
+    if (e.target === mediaSettingsPopup) {
+      mediaSettingsPopup.classList.add('hidden');
+    }
+  });
+  
+  // Toggle custom message settings visibility when checkbox is clicked
+  customMessageEnabled.addEventListener('change', () => {
+    if (customMessageEnabled.checked) {
+      // Check if there's content to determine if step should be shown
+      const hasContent = customMessageTitle.value.trim() !== '' || customMessageText.value.trim() !== '';
+      onedriveStep.style.display = hasContent ? '' : 'none';
+      
+      // Show the settings panel
+      customMessageSettings.classList.remove('hidden');
+    } else {
+      // Hide the step when disabled
+      onedriveStep.style.display = 'none';
+      
+      // Hide the settings panel
+      customMessageSettings.classList.add('hidden');
+    }
+  });
+  
+  // Browse for OBS application
+  browseOBSPathBtn.addEventListener('click', async () => {
+    try {
+      const obsPath = await window.electronAPI.browseForOBS();
+      if (obsPath) {
+        currentOBSPath.textContent = obsPath;
+        document.getElementById('media-settings-status').textContent = 'OBS path updated successfully';
+        document.getElementById('media-settings-status').style.color = '#4a6da7';
+      }
+    } catch (error) {
+      console.error('Error browsing for OBS:', error);
+      document.getElementById('media-settings-status').textContent = 'Error selecting OBS application';
+      document.getElementById('media-settings-status').style.color = 'red';
+    }
+  });
+  
+  // Browse for Media Manager application
+  browseMediaManagerPathBtn.addEventListener('click', async () => {
+    try {
+      const mediaManagerPath = await window.electronAPI.browseForMediaManager();
+      if (mediaManagerPath) {
+        currentMediaManagerPath.textContent = mediaManagerPath;
+        document.getElementById('media-settings-status').textContent = 'Media Manager path updated successfully';
+        document.getElementById('media-settings-status').style.color = '#4a6da7';
+      }
+    } catch (error) {
+      console.error('Error browsing for Media Manager:', error);
+      document.getElementById('media-settings-status').textContent = 'Error selecting Media Manager application';
+      document.getElementById('media-settings-status').style.color = 'red';
+    }
+  });
+  
+  // Browse for Zoom application
+  browseMediaZoomPathBtn.addEventListener('click', async () => {
+    try {
+      const zoomPath = await window.electronAPI.browseForMediaZoom();
+      if (zoomPath) {
+        currentMediaZoomPath.textContent = zoomPath;
+        document.getElementById('media-settings-status').textContent = 'Zoom path updated successfully';
+        document.getElementById('media-settings-status').style.color = '#4a6da7';
+      }
+    } catch (error) {
+      console.error('Error browsing for Zoom:', error);
+      document.getElementById('media-settings-status').textContent = 'Error selecting Zoom application';
+      document.getElementById('media-settings-status').style.color = 'red';
+    }
+  });
+  
+  // Launch Media button click handler
+  launchMediaBtn.addEventListener('click', async () => {
+    // Show progress container
+    
+    // Get custom message settings to determine if we should show the step
+    const customSettings = await window.electronAPI.getCustomMessageSettings();
+    const useCustomMessage = customSettings.enabled && 
+                            (customSettings.title.trim() !== '' || 
+                             customSettings.message.trim() !== '');
+    launchProgressContainer.classList.remove('hidden');
+    updateProgress(10, 'Starting launch sequence...');
+    
+    // Reset step indicators
+    document.querySelectorAll('.launch-steps li').forEach(step => {
+      step.classList.remove('completed');
+    });
+    
+    // If custom message is enabled, show appropriate status message
+    if (useCustomMessage) {
+      updateProgress(20, `Showing ${customSettings.title || 'Custom Message'}...`);
+    } else {
+      // Skip directly to OBS if no custom message
+      updateProgress(20, 'Preparing to launch OBS...');
+    }
+    
+    await showOnedrivePopup();
+    
+    // Launch OBS and wait 3 seconds
+    if (await launchOBS()) {
+      setTimeout(async () => {
+        // Launch Meeting Media Manager and wait 3 seconds
+        if (await launchMediaManager()) {
+          setTimeout(async () => {
+            // Launch Zoom
+            if (await launchZoom()) {
+              setTimeout(() => {
+                // Complete the process
+                updateProgress(100, 'All applications launched successfully!');
+                
+                // Hide progress bar after 3 seconds
+                setTimeout(() => {
+                  launchProgressContainer.classList.add('hidden');
+                }, 3000);
+              }, 1000);
+            }
+          }, 3000);
+        }
+      }, 3000);
     }
   });
 }

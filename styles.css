@@ -254,7 +254,7 @@ h1 {
   line-height: 1.4;
 }
 
-.checkbox-wrapper {
+.checkbox-wrapper, .radio-wrapper {
   display: flex;
   align-items: center;
 }
@@ -306,6 +306,56 @@ h1 {
   animation: fadeIn 0.3s ease-in-out;
 }
 
+/* Reset Settings Styles */
+.reset-settings-option {
+  border-left: 3px solid #d9534f !important;
+  background-color: #fff9f9 !important;
+}
+
+.reset-settings-option:hover {
+  background-color: #fff5f5 !important;
+}
+
+.reset-settings-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 1rem;
+}
+
+.reset-settings-btn:hover {
+  background-color: #c9302c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.reset-settings-btn.confirm {
+  background-color: #c9302c;
+  animation: pulse 1.5s infinite;
+}
+
+.reset-confirmation {
+  margin-top: 0.75rem;
+  color: #d9534f;
+  font-weight: bold;
+  font-size: 0.9rem;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(217, 83, 79, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(217, 83, 79, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(217, 83, 79, 0); }
+}
+
+/* Animation Keyframes */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -698,6 +748,221 @@ input[type="number"] {
   font-weight: bold;
 }
 
+/* Media Launcher Tool Styles */
+.media-launcher-content {
+  padding: 1rem 0;
+}
+
+.launch-sequence {
+  margin: 1.5rem 0;
+  background-color: #f0f5ff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border-left: 5px solid #4a6da7;
+}
+
+.launch-steps {
+  list-style-type: none;
+  padding: 0;
+}
+
+.launch-steps li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 1.1rem;
+  position: relative;
+  align-items: center;
+}
+
+.launch-steps li:last-child {
+  border-bottom: none;
+}
+
+.step-text {
+  margin-left: 25px;
+}
+
+.launch-media-btn {
+  display: block;
+  width: 250px;
+  padding: 1rem 1.5rem;
+  background-color: #4a6da7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin: 2rem auto;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.launch-media-btn:hover {
+  background-color: #3a5a8f;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.launch-media-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Progress Bar Styles */
+.launch-progress-container {
+  margin: 2rem auto;
+  max-width: 500px;
+  text-align: center;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 20px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(to right, #4a6da7, #6a8fd7);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.launch-status {
+  font-size: 1rem;
+  color: #555;
+  margin-top: 0.5rem;
+  min-height: 1.5rem;
+}
+
+/* OneDrive Popup Styles */
+.onedrive-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.onedrive-popup-content {
+  width: 400px;
+  max-width: 90%;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  padding: 1.5rem;
+  text-align: center;
+  transform: translateY(20px);
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+.onedrive-popup-content h3 {
+  color: #0078d4;
+  margin-bottom: 1rem;
+}
+
+.onedrive-popup-progress {
+  margin-top: 1.5rem;
+  height: 6px;
+  background-color: #f0f0f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.onedrive-popup-progress-bar {
+  height: 100%;
+  width: 0%;
+  background-color: #0078d4;
+  animation: progressAnimation 5s linear forwards;
+}
+
+@keyframes progressAnimation {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+/* Launch Steps Styles */
+.launch-steps li {
+  transition: all 0.3s ease;
+  padding-left: 5px;
+}
+
+.launch-steps li.completed:before {
+  content: "✓";
+  color: #4CAF50;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  opacity: 1;
+}
+
+/* Media Settings Panel Styles */
+.media-settings-group {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.media-settings-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.media-settings-group h4 {
+  color: #4a6da7;
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+}
+
+.media-settings-footer {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close-settings-btn {
+  padding: 0.6rem 1.2rem;
+  background-color: #4a6da7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.close-settings-btn:hover {
+  background-color: #3a5a8f;
+}
+
+.settings-status {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #4a6da7;
+  margin-right: 1rem;
+}
+
 /* Responsive Media Queries */
 @media (max-width: 768px) {
   header {
@@ -748,4 +1013,48 @@ input[type="number"] {
     width: 95%;
     height: 95%;
   }
+}
+
+/* Custom Message Settings Styles */
+.custom-message-settings {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f5f8ff;
+  border-radius: 6px;
+  border-left: 3px solid #4a6da7;
+}
+
+.settings-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.settings-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  min-height: 100px;
+  resize: vertical;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.settings-input:focus, .settings-textarea:focus {
+  border-color: #4a6da7;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(74, 109, 167, 0.2);
+}
+
+/* Hide custom message settings when disabled */
+.custom-message-settings.hidden {
+  display: none;
 }
