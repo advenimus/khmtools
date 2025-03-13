@@ -189,7 +189,7 @@
             
             <div class="launch-sequence">
               <ul class="launch-steps">
-                <li id="onedrive-step"><span class="step-text">Custom message</span></li>
+                <li id="custommsg-step"><span class="step-text">Custom message</span></li>
                 <li id="obs-step"><span class="step-text">Launch OBS with virtual camera</span></li>
                 <li id="media-manager-step"><span class="step-text">Launch Meeting Media Manager</span></li>
                 <li id="zoom-step"><span class="step-text">Launch Zoom</span></li>
@@ -206,14 +206,14 @@
               <p id="launch-status" class="launch-status">Preparing to launch...</p>
             </div>
             
-            <!-- OneDrive popup (hidden by default) -->
-            <div id="onedrive-popup" class="onedrive-popup hidden">
-              <div class="onedrive-popup-content">
+            <!-- custommsg popup (hidden by default) -->
+            <div id="custommsg-popup" class="custommsg-popup hidden">
+              <div class="custommsg-popup-content">
                 <h3>Custom Message</h3>
                 <p>Your custom message will appear here.</p>
                 <p></p>
-                <div class="onedrive-popup-progress">
-                  <div class="onedrive-popup-progress-bar"></div>
+                <div class="custommsg-popup-progress">
+                  <div class="custommsg-popup-progress-bar"></div>
                 </div>
               </div>
             </div>
@@ -301,7 +301,7 @@
             <input type="checkbox" id="custom-message-enabled" name="custom-message-enabled">
             <label for="custom-message-enabled">Enable Custom Message</label>
           </div>
-          <p class="settings-description">When enabled, a custom message will be displayed instead of the default OneDrive sync check.</p>
+          <p class="settings-description">When enabled, a custom message will be displayed instead of the default custommsg sync check.</p>
           
           <div id="custom-message-settings" class="custom-message-settings">
             <div class="form-group">

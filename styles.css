@@ -842,8 +842,8 @@ input[type="number"] {
   min-height: 1.5rem;
 }
 
-/* OneDrive Popup Styles */
-.onedrive-popup {
+/* custommsg Popup Styles */
+.custommsg-popup {
   position: fixed;
   top: 0;
   left: 0;
@@ -858,7 +858,7 @@ input[type="number"] {
   animation: fadeIn 0.3s ease-out forwards;
 }
 
-.onedrive-popup-content {
+.custommsg-popup-content {
   width: 400px;
   max-width: 90%;
   background-color: #fff;
@@ -870,12 +870,12 @@ input[type="number"] {
   animation: slideUp 0.3s ease-out forwards;
 }
 
-.onedrive-popup-content h3 {
+.custommsg-popup-content h3 {
   color: #0078d4;
   margin-bottom: 1rem;
 }
 
-.onedrive-popup-progress {
+.custommsg-popup-progress {
   margin-top: 1.5rem;
   height: 6px;
   background-color: #f0f0f0;
@@ -883,11 +883,11 @@ input[type="number"] {
   overflow: hidden;
 }
 
-.onedrive-popup-progress-bar {
+.custommsg-popup-progress-bar {
   height: 100%;
   width: 0%;
   background-color: #0078d4;
-  animation: progressAnimation 5s linear forwards;
+  transition: width 5s linear; /* Default transition, will be overridden by JS */
 }
 
 @keyframes progressAnimation {

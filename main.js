@@ -467,8 +467,13 @@ app.whenReady().then(() => {
       // On macOS, use the 'open' command with arguments
       launchCommand = `open -a "${obsPath}" --args --startvirtualcam --disable-shutdown-check`;
     } else {
-      // On Windows, directly execute with arguments
-      launchCommand = `"${obsPath}" --startvirtualcam --disable-shutdown-check`;
+      // On Windows, we need to set the working directory to the OBS directory
+      // to ensure it can find its locale files
+      const obsDir = path.dirname(obsPath);
+      
+      // Use 'cd' to change to OBS directory before launching
+      // This ensures OBS can find its locale files
+      launchCommand = `cd "${obsDir}" && "${obsPath}" --startvirtualcam --disable-shutdown-check`;
     }
     
     exec(launchCommand, (error) => {

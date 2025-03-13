@@ -69,6 +69,19 @@ if (mediaLauncherBtn) {
   mediaLauncherBtn.addEventListener('click', () => {
     mediaLauncherBtn.classList.add('active');
     showToolPanel('media-launcher');
+    
+    // Load custom message settings and update UI when Media Launcher is opened
+    if (window.electronAPI) {
+      window.electronAPI.getCustomMessageSettings().then(settings => {
+        // Update the visibility of the custom message step based only on enabled setting
+        custommsgStep.style.display = settings.enabled ? '' : 'none';
+        
+        // Update the step text to use the title value
+        if (settings.enabled && settings.title) {
+          custommsgStep.querySelector('.step-text').textContent = settings.title;
+        }
+      });
+    }
   });
 }
 
@@ -307,6 +320,19 @@ if (window.electronAPI) {
   window.addEventListener('DOMContentLoaded', async () => {
     try {
       const appSettings = await window.electronAPI.getAppSettings();
+      
+      // Initialize custom message step visibility when the page loads
+      if (custommsgStep) {
+        const customSettings = await window.electronAPI.getCustomMessageSettings();
+        // Update the visibility of the custom message step based only on enabled setting
+        custommsgStep.style.display = customSettings.enabled ? '' : 'none';
+        
+        // Update the step text to use the title value
+        if (customSettings.enabled && customSettings.title) {
+          custommsgStep.querySelector('.step-text').textContent = customSettings.title;
+        }
+      }
+      
       alwaysMaximizeCheckbox.checked = appSettings.alwaysMaximize || false;
       defaultToolSelect.value = appSettings.defaultTool || 'welcome-screen';
     } catch (error) {
@@ -427,10 +453,10 @@ if (window.electronAPI) {
   const launchProgressContainer = document.getElementById('launch-progress-container');
   const launchProgressBar = document.getElementById('launch-progress-bar');
   const launchStatus = document.getElementById('launch-status');
-  const onedrivePopup = document.getElementById('onedrive-popup');
-  const onedrivePopupTitle = document.querySelector('.onedrive-popup-content h3');
-  const onedrivePopupMessage = document.querySelector('.onedrive-popup-content p');
-  const onedriveStep = document.getElementById('onedrive-step');
+  const custommsgPopup = document.getElementById('custommsg-popup');
+  const custommsgPopupTitle = document.querySelector('.custommsg-popup-content h3');
+  const custommsgPopupMessage = document.querySelector('.custommsg-popup-content p');
+  const custommsgStep = document.getElementById('custommsg-step');
   
   const mediaSettingsBtn = document.getElementById('media-settings-btn');
   const mediaSettingsPopup = document.getElementById('media-settings-popup');
@@ -467,47 +493,46 @@ if (window.electronAPI) {
   }
   
   // Function to show the custom message popup
-  async function showOnedrivePopup() {
+  async function showcustommsgPopup() {
     // Get custom message settings
     const customSettings = await window.electronAPI.getCustomMessageSettings();
+    const displayTime = customSettings.displayTime || 5000;
     
     // Determine if we should use custom message
-    const useCustomMessage = customSettings.enabled && 
-                            (customSettings.title.trim() !== '' || 
-                             customSettings.message.trim() !== '');
+    // Only check if the enable custom message option is checked
+    const useCustomMessage = customSettings.enabled;
     
     // If custom message is enabled and has content, show it
     if (useCustomMessage) {
       // Set popup content based on settings
-      onedrivePopupTitle.textContent = customSettings.title || 'Custom Message';
-      onedrivePopupMessage.textContent = customSettings.message || '';
-      onedriveStep.querySelector('.step-text').textContent = customSettings.title || 'Custom Message';
+      custommsgPopupTitle.textContent = customSettings.title || 'Custom Message';
+      custommsgPopupMessage.textContent = customSettings.message || '';
+      custommsgStep.querySelector('.step-text').textContent = customSettings.title;
       
       return new Promise(resolve => {
-        onedrivePopup.classList.remove('hidden');
+        custommsgPopup.classList.remove('hidden');
         
-        const progressBar = document.querySelector('.onedrive-popup-progress-bar');
+        const progressBar = document.querySelector('.custommsg-popup-progress-bar');
         progressBar.style.width = '0%';
         
         // Animate progress bar
         setTimeout(() => {
           progressBar.style.width = '100%';
         }, 100);
-        
-        // Get display time (default to 5000ms if not set)
-        const displayTime = customSettings.displayTime || 5000;
+
+        // Set transition duration to match the display time
+        progressBar.style.transition = `width ${displayTime/1000}s linear`;
         
         // Close popup and resolve promise after the specified time
         setTimeout(() => {
-          onedrivePopup.classList.add('hidden');
+          custommsgPopup.classList.add('hidden');
           resolve();
-          markStepCompleted('onedrive-step');
         }, displayTime);
       });
     } else {
       // If custom message is disabled or empty, skip this step entirely
-      // Hide the OneDrive step in the launch sequence
-      onedriveStep.style.display = 'none';
+      // Hide the custommsg step in the launch sequence
+      custommsgStep.style.display = 'none';
       
       // Immediately resolve the promise to continue with the next step
       return Promise.resolve();
@@ -615,11 +640,12 @@ if (window.electronAPI) {
       customMessageText.value = settings.message || '';
       customMessageTime.value = Math.floor((settings.displayTime || 5000) / 1000);
 
-      // Update the visibility of the custom message step in the launch steps list
-      if (settings.enabled && (settings.title.trim() !== '' || settings.message.trim() !== '')) {
-        onedriveStep.style.display = '';
-      } else {
-        onedriveStep.style.display = 'none';
+      // Update the visibility of the custom message step in the launch steps list based only on enabled setting
+      custommsgStep.style.display = settings.enabled ? '' : 'none';
+      
+      // Update the step text to use the title value
+      if (settings.enabled && settings.title) {
+        custommsgStep.querySelector('.step-text').textContent = settings.title;
       }
       
       // Show/hide custom message settings based on enabled state
@@ -641,9 +667,8 @@ if (window.electronAPI) {
     // Load custom message settings and update UI
     loadCustomMessageSettings().then(() => {
       // Ensure the custom message step visibility is updated
-      const isEnabled = customMessageEnabled.checked;
-      const hasContent = customMessageTitle.value.trim() !== '' || customMessageText.value.trim() !== '';
-      onedriveStep.style.display = (isEnabled && hasContent) ? '' : 'none';
+      const isEnabled = customMessageEnabled.checked; 
+      custommsgStep.style.display = isEnabled ? '' : 'none';
     });
     loadCustomMessageSettings();
   });
@@ -673,7 +698,7 @@ if (window.electronAPI) {
       .catch(error => console.error('Error saving custom message settings:', error));
     
     // Update the visibility of the custom message step based on new settings
-    onedriveStep.style.display = (settings.enabled && (settings.title.trim() !== '' || settings.message.trim() !== '')) ? '' : 'none';
+    custommsgStep.style.display = settings.enabled ? '' : 'none';
     
     mediaSettingsPopup.classList.add('hidden');
   });
@@ -689,14 +714,13 @@ if (window.electronAPI) {
   customMessageEnabled.addEventListener('change', () => {
     if (customMessageEnabled.checked) {
       // Check if there's content to determine if step should be shown
-      const hasContent = customMessageTitle.value.trim() !== '' || customMessageText.value.trim() !== '';
-      onedriveStep.style.display = hasContent ? '' : 'none';
+      custommsgStep.style.display = '';
       
       // Show the settings panel
       customMessageSettings.classList.remove('hidden');
     } else {
       // Hide the step when disabled
-      onedriveStep.style.display = 'none';
+      custommsgStep.style.display = 'none';
       
       // Hide the settings panel
       customMessageSettings.classList.add('hidden');
@@ -757,9 +781,7 @@ if (window.electronAPI) {
     
     // Get custom message settings to determine if we should show the step
     const customSettings = await window.electronAPI.getCustomMessageSettings();
-    const useCustomMessage = customSettings.enabled && 
-                            (customSettings.title.trim() !== '' || 
-                             customSettings.message.trim() !== '');
+    const useCustomMessage = customSettings.enabled;
     launchProgressContainer.classList.remove('hidden');
     updateProgress(10, 'Starting launch sequence...');
     
@@ -770,13 +792,18 @@ if (window.electronAPI) {
     
     // If custom message is enabled, show appropriate status message
     if (useCustomMessage) {
-      updateProgress(20, `Showing ${customSettings.title || 'Custom Message'}...`);
+      updateProgress(20, `Showing ${customSettings.title}...`);
     } else {
       // Skip directly to OBS if no custom message
       updateProgress(20, 'Preparing to launch OBS...');
     }
     
-    await showOnedrivePopup();
+    // Show custom message popup if enabled
+    if (useCustomMessage) {
+      await showcustommsgPopup();
+      // Mark step as completed after popup is closed
+      markStepCompleted('custommsg-step');
+    }
     
     // Launch OBS and wait 3 seconds
     if (await launchOBS()) {
