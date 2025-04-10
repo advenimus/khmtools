@@ -55,7 +55,7 @@
           <li>
             <button id="media-launcher-btn" class="tool-button">
               <span class="tool-name">Media Launcher</span>
-              <p class="tool-description">Launch all media presentationt tools for hosting</p>
+              <p class="tool-description">Launch all media presentation tools for hosting</p>
             </button>
           </li>
           <!-- Additional tools will be added here -->
@@ -163,26 +163,27 @@
             <button id="launch-zoom-btn" class="launch-zoom-btn">Launch Zoom</button>
             <p id="zoom-status" class="zoom-status"></p>
           </div>
-          
-          <!-- Zoom Settings Panel -->
-          <div id="zoom-settings-panel" class="settings-panel hidden">
-            <h3>Zoom Settings</h3>
-            <p>Configure the path to your Zoom application:</p>
-            <button id="browse-zoom-path-btn" class="browse-btn">Browse for Zoom</button>
-            <p id="current-zoom-path" class="current-path">No path configured</p>
-          </div>
         </div>
         
         <!-- Media Launcher Tool -->
         <div id="media-launcher" class="tool-panel hidden">
           <div class="tool-header">
             <h2>Zoom Media Launcher</h2>
-            <button id="media-settings-btn" class="settings-button" aria-label="Media Settings">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-              </svg>
-            </button>
+            <div class="tool-header-buttons">
+              <button id="media-help-btn" class="help-button" aria-label="Help">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+              </button>
+              <button id="media-settings-btn" class="settings-button" aria-label="Media Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+              </button>
+            </div>
           </div>
           <div class="media-launcher-content">
             <p class="tool-instructions">Launch all your meeting media tools with one click:</p>
@@ -329,7 +330,80 @@
     </div>
   </div>
   
+  <!-- Media Help Popup -->
+  <div id="media-help-popup" class="app-settings-popup hidden">
+    <div class="app-settings-content">
+      <div class="app-settings-header">
+        <h2>Media Launcher Help</h2>
+        <button id="close-media-help-btn" class="close-app-settings">×</button>
+      </div>
+      <div class="app-settings-body">
+        <h3>Using the Media Launcher</h3>
+        <p>This tool is designed to launch the appropriate applications in the correct order for use with Meeting Media Manager (M³), a powerful media management tool for congregation meetings.</p>
+        
+        <h3>Resources</h3>
+        <ul>
+          <li><strong>Meeting Media Manager (M³):</strong> <a href="https://sircharlo.github.io/meeting-media-manager/" class="external-link">https://sircharlo.github.io/meeting-media-manager/</a></li>
+          <li><strong>M³ Documentation:</strong> <a href="https://sircharlo.github.io/meeting-media-manager/using-at-a-kingdom-hall" class="external-link">https://sircharlo.github.io/meeting-media-manager/using-at-a-kingdom-hall</a></li>
+          <li><strong>OBS Studio:</strong> <a href="https://obsproject.com/download" class="external-link">https://obsproject.com/download</a></li>
+          <li><strong>Zoom:</strong> <a href="https://zoom.us/download" class="external-link">https://zoom.us/download</a></li>
+        </ul>
+        
+        <h3>How This Tool Works</h3>
+        <p>Our Media Launcher complements M³ by ensuring that OBS Studio, Meeting Media Manager, and Zoom are all launched in the correct sequence, which helps streamline the setup process for congregation meetings.</p>
+        <ul>
+          <li>Configure the paths to your applications in settings first</li>
+          <li>Click "Launch Media Tools" to automatically start all applications in sequence</li>
+          <li>Wait for each application to start before the next one launches</li>
+        </ul>
+        
+        <h3>Custom Message Feature</h3>
+        <p>The custom message option is particularly useful when you've set up folder monitoring in M³ and are using cloud storage solutions like OneDrive or Google Drive for remote file adding.</p>
+        <p>When enabled, this feature displays a customizable popup message that reminds the brother operating the system to allow sufficient time for cloud synchronization before proceeding. This ensures that any media files added remotely have been properly synchronized to the local machine before the meeting begins.</p>
+        <p>To configure this feature:</p>
+        <ul>
+          <li>Enable the Custom Message option in Media Launcher Settings</li>
+          <li>Set your preferred title and message text</li>
+          <li>Adjust the display time as needed</li>
+        </ul>
+      </div>
+      <div class="app-settings-footer">
+        <button id="close-media-help-footer-btn" class="save-app-settings">Close</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Zoom Settings Popup -->
+  <div id="zoom-settings-popup" class="app-settings-popup hidden">
+    <div class="app-settings-content">
+      <div class="app-settings-header">
+        <h2>Zoom Settings</h2>
+        <button id="close-zoom-settings" class="close-app-settings">×</button>
+      </div>
+      <div class="app-settings-body">
+        <div class="settings-option">
+          <div class="settings-group-title">Zoom Application</div>
+          <p>Configure the path to your Zoom application:</p>
+          <button id="browse-zoom-path-btn" class="browse-btn">Browse for Zoom</button>
+          <p id="current-zoom-path" class="current-path">No path configured</p>
+        </div>
+        
+        <div class="settings-option">
+          <div class="settings-group-title">Meeting Settings</div>
+          <div class="form-group">
+            <label for="zoom-meeting-id">Meeting ID:</label>
+            <input type="text" id="zoom-meeting-id" class="settings-input" placeholder="Enter your recurring meeting ID">
+            <p class="settings-description">Enter the meeting ID for your recurring Zoom meeting. You can enter just the ID (e.g., "1234567890"), ID with password (e.g., "1234567890,password123"), or paste a Zoom meeting URL.</p>
+          </div>
+        </div>
+      </div>
+      <div class="app-settings-footer">
+        <p id="meeting-id-status" class="settings-status"></p>
+        <button id="save-zoom-settings" class="save-app-settings">Save Settings</button>
+      </div>
+    </div>
+  </div>
+  
   <script src="renderer.js"></script>
 </body>
-</html>
 </html>

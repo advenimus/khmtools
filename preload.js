@@ -30,6 +30,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getZoomPath: () => ipcRenderer.invoke('get-zoom-path'),
   browseForZoom: () => ipcRenderer.invoke('browse-for-zoom'),
   launchZoom: () => ipcRenderer.invoke('launch-zoom'),
+  getZoomMeetingId: () => ipcRenderer.invoke('get-zoom-meeting-id'),
+  saveZoomMeetingId: (meetingId) => ipcRenderer.invoke('save-zoom-meeting-id', meetingId),
   
   // App settings functions
   saveAppSettings: (settings) => ipcRenderer.invoke('save-app-settings', settings),

@@ -94,6 +94,16 @@ if (logoLink && window.electronAPI) {
   });
 }
 
+// Handle external links in help popup
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('external-link')) {
+    e.preventDefault();
+    if (window.electronAPI) {
+      window.electronAPI.openExternal(e.target.href);
+    }
+  }
+});
+
 // Function to return to calculator view
 function returnToCalculator() {
   resultView.classList.add('hidden');
@@ -254,35 +264,60 @@ if (window.electronAPI) {
   const browseZoomPathBtn = document.getElementById('browse-zoom-path-btn');
   const currentZoomPath = document.getElementById('current-zoom-path');
   const zoomStatus = document.getElementById('zoom-status');
+  const zoomMeetingIdInput = document.getElementById('zoom-meeting-id');
+  const saveZoomSettingsBtn = document.getElementById('save-zoom-settings');
+  const meetingIdStatus = document.getElementById('meeting-id-status');
+  const zoomSettingsPopup = document.getElementById('zoom-settings-popup');
+  const closeZoomSettings = document.getElementById('close-zoom-settings');
 
   console.log('Launch Zoom Button:', launchZoomBtn);
   console.log('Settings Button:', zoomSettingsBtn);
   console.log('Browse Button:', browseZoomPathBtn);
-  console.log('Settings Panel:', zoomSettingsPanel);
   
-  // Function to update the displayed Zoom path
-  async function updateZoomPathDisplay() {
+  // Function to update the displayed Zoom path and meeting ID
+  async function updateZoomSettings() {
     try {
+      // Update Zoom path
       const zoomPath = await window.electronAPI.getZoomPath();
       if (zoomPath) {
         currentZoomPath.textContent = zoomPath;
       } else {
         currentZoomPath.textContent = 'No path configured';
       }
+      
+      // Update Meeting ID
+      const meetingId = await window.electronAPI.getZoomMeetingId();
+      if (meetingId) {
+        zoomMeetingIdInput.value = meetingId;
+      } else {
+        zoomMeetingIdInput.value = '';
+      }
     } catch (error) {
-      console.error('Error getting Zoom path:', error);
+      console.error('Error getting Zoom settings:', error);
       currentZoomPath.textContent = 'Error getting Zoom path';
     }
   }
   
-  // Initialize the Zoom path display when the tool is shown
-  startZoomBtn.addEventListener('click', updateZoomPathDisplay);
+  // Initialize the Zoom settings display when the tool is shown
+  startZoomBtn.addEventListener('click', updateZoomSettings);
   
-  // Toggle settings panel when settings button is clicked
+  // Open settings popup when settings button is clicked
   zoomSettingsBtn.addEventListener('click', () => {
-    console.log('Settings button clicked, toggling panel');
-    zoomSettingsPanel.classList.toggle('hidden');
-    updateZoomPathDisplay();
+    console.log('Settings button clicked, opening popup');
+    zoomSettingsPopup.classList.remove('hidden');
+    updateZoomSettings();
+  });
+  
+  // Close settings popup
+  closeZoomSettings.addEventListener('click', () => {
+    zoomSettingsPopup.classList.add('hidden');
+  });
+  
+  // Close settings popup when clicking outside
+  zoomSettingsPopup.addEventListener('click', (e) => {
+    if (e.target === zoomSettingsPopup) {
+      zoomSettingsPopup.classList.add('hidden');
+    }
   });
   
   // Browse for Zoom application
@@ -292,20 +327,64 @@ if (window.electronAPI) {
       const zoomPath = await window.electronAPI.browseForZoom();
       if (zoomPath) {
         currentZoomPath.textContent = zoomPath;
-        zoomStatus.textContent = 'Zoom path updated successfully';
-        zoomStatus.style.color = '#4a6da7';
+        meetingIdStatus.textContent = 'Zoom path updated successfully';
+        meetingIdStatus.style.color = '#4a6da7';
+        
+        // Clear status after 3 seconds
+        setTimeout(() => {
+          meetingIdStatus.textContent = '';
+        }, 3000);
       }
     } catch (error) {
       console.error('Error browsing for Zoom:', error);
-      zoomStatus.textContent = 'Error selecting Zoom application';
-      zoomStatus.style.color = 'red';
+      meetingIdStatus.textContent = 'Error selecting Zoom application';
+      meetingIdStatus.style.color = 'red';
+    }
+  });
+  
+  // Save Settings button
+  saveZoomSettingsBtn.addEventListener('click', async () => {
+    const meetingId = zoomMeetingIdInput.value.trim();
+    try {
+      const result = await window.electronAPI.saveZoomMeetingId(meetingId);
+      if (result.success) {
+        meetingIdStatus.textContent = 'Settings saved successfully';
+        meetingIdStatus.style.color = '#4a6da7';
+        
+        // Clear status after 3 seconds
+        setTimeout(() => {
+          meetingIdStatus.textContent = '';
+          // Close the popup
+          zoomSettingsPopup.classList.add('hidden');
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Error saving meeting ID:', error);
+      meetingIdStatus.textContent = 'Error saving settings';
+      meetingIdStatus.style.color = 'red';
     }
   });
   
   // Launch Zoom
   launchZoomBtn.addEventListener('click', async () => {
     console.log('Launch Zoom button clicked');
-    zoomStatus.textContent = 'Launching Zoom...';
+    
+    // Check if there's a meeting ID
+    const meetingId = await window.electronAPI.getZoomMeetingId();
+    
+    if (!meetingId) {
+      // If no meeting ID is set, show the settings popup and prompt the user
+      zoomSettingsPopup.classList.remove('hidden');
+      zoomStatus.textContent = 'Please enter a meeting ID in the settings';
+      zoomStatus.style.color = 'orange';
+      
+      // Focus the meeting ID input
+      zoomMeetingIdInput.focus();
+      return;
+    }
+    
+    // Launch Zoom with the existing meeting ID
+    zoomStatus.textContent = 'Launching Zoom meeting...';
     const result = await window.electronAPI.launchZoom();
     zoomStatus.textContent = result.message;
     zoomStatus.style.color = result.success ? '#4a6da7' : 'red';
@@ -462,6 +541,10 @@ if (window.electronAPI) {
   const mediaSettingsPopup = document.getElementById('media-settings-popup');
   const saveMediaSettingsBtn = document.getElementById('save-media-settings-btn');
   const closeMediaSettingsBtn = document.getElementById('close-media-settings-btn');
+  const mediaHelpBtn = document.getElementById('media-help-btn');
+  const mediaHelpPopup = document.getElementById('media-help-popup');
+  const closeMediaHelpBtn = document.getElementById('close-media-help-btn');
+  const closeMediaHelpFooterBtn = document.getElementById('close-media-help-footer-btn');
   const browseOBSPathBtn = document.getElementById('browse-obs-path-btn');
   const browseMediaManagerPathBtn = document.getElementById('browse-media-manager-path-btn');
   const browseMediaZoomPathBtn = document.getElementById('browse-media-zoom-path-btn');
@@ -661,7 +744,7 @@ if (window.electronAPI) {
   
   // Toggle settings panel when settings button is clicked
   mediaSettingsBtn.addEventListener('click', () => {
-    mediaSettingsPopup.classList.remove('hidden');
+    mediaSettingsPopup.classList.toggle('hidden');
     updatePathDisplays(); 
     
     // Load custom message settings and update UI
@@ -670,9 +753,23 @@ if (window.electronAPI) {
       const isEnabled = customMessageEnabled.checked; 
       custommsgStep.style.display = isEnabled ? '' : 'none';
     });
-    loadCustomMessageSettings();
   });
   
+  // Show media help popup when help button is clicked
+  mediaHelpBtn.addEventListener('click', () => {
+    mediaHelpPopup.classList.remove('hidden');
+  });
+  
+  // Close media help popup when close button is clicked
+  closeMediaHelpBtn.addEventListener('click', () => {
+    mediaHelpPopup.classList.add('hidden');
+  });
+  
+  // Close media help popup when footer close button is clicked
+  closeMediaHelpFooterBtn.addEventListener('click', () => {
+    mediaHelpPopup.classList.add('hidden');
+  });
+
   // Close settings popup with close button
   closeMediaSettingsBtn.addEventListener('click', () => {
     mediaSettingsPopup.classList.add('hidden');
@@ -707,6 +804,13 @@ if (window.electronAPI) {
   mediaSettingsPopup.addEventListener('click', (e) => {
     if (e.target === mediaSettingsPopup) {
       mediaSettingsPopup.classList.add('hidden');
+    }
+  });
+  
+  // Make help popup close when clicking outside
+  mediaHelpPopup.addEventListener('click', (e) => {
+    if (e.target === mediaHelpPopup) {
+      mediaHelpPopup.classList.add('hidden');
     }
   });
   

@@ -166,6 +166,36 @@ h1 {
   animation: slideUp 0.3s ease-out forwards;
 }
 
+/* Media Help Popup specific styles */
+#media-help-popup .app-settings-content {
+  width: 700px;
+  max-width: 95%;
+}
+
+#media-help-popup .app-settings-body {
+  padding: 2rem;
+}
+
+#media-help-popup h3 {
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  color: #4a6da7;
+}
+
+#media-help-popup p {
+  margin-bottom: 1.2rem;
+  line-height: 1.5;
+}
+
+#media-help-popup ul {
+  margin-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+#media-help-popup li {
+  margin-bottom: 0.8rem;
+}
+
 .app-settings-header {
   display: flex;
   justify-content: space-between;
@@ -425,17 +455,27 @@ h3 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.help-button {
+.tool-header h2 {
+  margin: 0;
+  color: #333;
+}
+
+.tool-header-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.settings-button, .help-button {
   width: 28px;
   height: 28px;
   border-radius: 50%;
   background-color: #4a6da7;
   color: white;
-  font-weight: bold;
-  font-size: 18px;
   border: none;
   cursor: pointer;
   display: flex;
@@ -444,7 +484,7 @@ h3 {
   transition: background-color 0.3s ease;
 }
 
-.help-button:hover {
+.settings-button:hover, .help-button:hover {
   background-color: #3a5a8f;
 }
 
@@ -1057,4 +1097,67 @@ input[type="number"] {
 /* Hide custom message settings when disabled */
 .custom-message-settings.hidden {
   display: none;
+}
+
+/* Save button for Meeting ID */
+.save-btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: #4a6da7;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.save-btn:hover {
+  background-color: #3a5a8f;
+}
+
+/* Status message for Meeting ID */
+.settings-status {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  padding: 0.4rem 0;
+  color: #4a6da7;
+  transition: opacity 0.3s ease;
+}
+
+/* Form group styling for settings */
+.settings-option .form-group {
+  margin-bottom: 1rem;
+}
+
+.settings-option .form-group label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.settings-option .settings-input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  background-color: #f9f9f9;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.settings-option .settings-input:focus {
+  border-color: #4a6da7;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(74, 109, 167, 0.2);
+}
+
+.settings-option .settings-description {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 0.3rem;
+  line-height: 1.4;
 }
