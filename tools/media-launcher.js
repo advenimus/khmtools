@@ -96,13 +96,15 @@ function launchOBS() {
           }
         });
       } else if (process.platform === 'win32') {
-        // Windows: Launch executable
-        exec(`"${obsPath}"`, (error) => {
+        // Windows: Launch executable with start command and virtual camera flag
+        const obsDir = path.dirname(obsPath);
+        const obsExe = path.basename(obsPath);
+        exec(`start /d "${obsDir}" "" ${obsExe} --startvirtualcam`, (error) => {
           if (error) {
             console.error('Error launching OBS:', error);
             resolve({ success: false, message: 'Failed to launch OBS: ' + error.message });
           } else {
-            resolve({ success: true, message: 'OBS launched successfully' });
+            resolve({ success: true, message: 'OBS launched successfully with virtual camera' });
           }
         });
       } else {
