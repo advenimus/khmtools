@@ -6,10 +6,10 @@
   "scripts": {
     "start": "cross-env NODE_ENV=production electron .",
     "dev": "cross-env NODE_ENV=development electron .",
-    "build": "electron-builder build --mac --arm64 --win --x64 --linux",
-    "build-mac": "electron-builder build --mac --arm64",
-    "build-win": "electron-builder build --win --x64",
-    "build-linux": "electron-builder build --linux"
+    "build": "electron-builder build",
+    "build-mac": "electron-builder build --mac --arm64 --publish always",
+    "build-win": "electron-builder build --win --x64 --publish always",
+    "build-linux": "electron-builder build --linux --publish always"
   },
   "keywords": [],
   "author": "JW Tools Team",
