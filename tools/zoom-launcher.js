@@ -83,9 +83,12 @@ function launchZoom() {
           });
         }
       } else if (process.platform === 'win32') {
-        // Windows: Launch Zoom executable
-        // If meeting ID is available, add the join meeting parameter
-        let command = `"${zoomPath}"`;
+        // Windows: Launch Zoom executable with start command to avoid blocking
+        const zoomDir = path.dirname(zoomPath);
+        const zoomExe = path.basename(zoomPath);
+        
+        // Build command with start to run in background
+        let command = `start /b /d "${zoomDir}" "" "${zoomExe}"`;
         if (meetingId && meetingId.trim() !== '') {
           command += ` --url="zoommtg://zoom.us/join?confno=${meetingId}"`;
         }

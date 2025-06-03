@@ -153,8 +153,12 @@ function launchMediaManager() {
           }
         });
       } else if (process.platform === 'win32') {
-        // Windows: Launch executable
-        exec(`"${mediaManagerPath}"`, (error) => {
+        // Windows: Launch executable with start command to avoid blocking
+        const mediaManagerDir = path.dirname(mediaManagerPath);
+        const mediaManagerExe = path.basename(mediaManagerPath);
+        
+        // Use start command with /b flag to run in background without waiting
+        exec(`start /b /d "${mediaManagerDir}" "" "${mediaManagerExe}"`, (error) => {
           if (error) {
             console.error('Error launching Media Manager:', error);
             resolve({ success: false, message: 'Failed to launch Media Manager: ' + error.message });
@@ -208,8 +212,12 @@ function launchMediaZoom() {
           }
         });
       } else if (process.platform === 'win32') {
-        // Windows: Launch executable
-        exec(`"${mediaZoomPath}"`, (error) => {
+        // Windows: Launch executable with start command to avoid blocking
+        const mediaZoomDir = path.dirname(mediaZoomPath);
+        const mediaZoomExe = path.basename(mediaZoomPath);
+        
+        // Use start command with /b flag to run in background without waiting
+        exec(`start /b /d "${mediaZoomDir}" "" "${mediaZoomExe}"`, (error) => {
           if (error) {
             console.error('Error launching Media Zoom:', error);
             resolve({ success: false, message: 'Failed to launch Media Zoom: ' + error.message });

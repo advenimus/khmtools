@@ -43,6 +43,17 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   }
   
+  // Add keyboard shortcut for DevTools
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    // F12 or Cmd+Option+I (Mac) / Ctrl+Shift+I (Windows/Linux)
+    if (input.key === 'F12' || 
+        (input.control && input.shift && input.key === 'I') ||
+        (input.meta && input.alt && input.key === 'I')) {
+      mainWindow.webContents.toggleDevTools();
+      event.preventDefault();
+    }
+  });
+  
   // Remove menu completely on Windows and other non-macOS platforms
   const removeWindowsMenu = () => {
     if (process.platform !== 'darwin') {
@@ -118,6 +129,15 @@ app.whenReady().then(() => {
         mainWindow.maximize();
         return true;
       }
+    }
+    return false;
+  });
+  
+  // Handle dev tools toggle
+  ipcMain.handle('toggle-dev-tools', () => {
+    if (mainWindow) {
+      mainWindow.webContents.toggleDevTools();
+      return true;
     }
     return false;
   });

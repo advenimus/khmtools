@@ -38,6 +38,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getAppSettings: () => ipcRenderer.invoke('get-app-settings'),
   resetAllSettings: () => ipcRenderer.invoke('reset-all-settings'),
   
+  // Developer tools
+  toggleDevTools: () => ipcRenderer.invoke('toggle-dev-tools'),
+  
   // Media Launcher functions
   launchOBS: () => ipcRenderer.invoke('launch-obs'),
   getOBSPath: () => ipcRenderer.invoke('get-obs-path'),

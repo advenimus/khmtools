@@ -30,6 +30,7 @@ const resetSettingsBtn = document.getElementById('reset-settings-btn');
 const resetConfirmation = document.getElementById('reset-confirmation');
 const defaultToolSelect = document.getElementById('default-tool');
 const alwaysMaximizeCheckbox = document.getElementById('always-maximize');
+const toggleDevToolsBtn = document.getElementById('toggle-dev-tools-btn');
 
 // Show the selected tool panel and hide others
 function showToolPanel(panelId) {
@@ -428,6 +429,17 @@ if (window.electronAPI) {
   closeAppSettings.addEventListener('click', () => {
     appSettingsPopup.classList.add('hidden');
   });
+  
+  // Toggle Developer Tools
+  if (toggleDevToolsBtn) {
+    toggleDevToolsBtn.addEventListener('click', async () => {
+      try {
+        await window.electronAPI.toggleDevTools();
+      } catch (error) {
+        console.error('Error toggling dev tools:', error);
+      }
+    });
+  }
   
   // Save settings
   saveAppSettings.addEventListener('click', async () => {
