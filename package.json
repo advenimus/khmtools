@@ -7,9 +7,12 @@
     "start": "cross-env NODE_ENV=production electron .",
     "dev": "cross-env NODE_ENV=development electron .",
     "build": "electron-builder build",
-    "build-mac": "electron-builder build --mac --arm64 --publish always",
-    "build-win": "electron-builder build --win --x64 --publish always",
-    "build-linux": "electron-builder build --linux --publish always"
+    "build-mac": "electron-builder build --mac --arm64",
+    "build-win": "electron-builder build --win --x64",
+    "build-linux": "electron-builder build --linux",
+    "publish-mac": "electron-builder build --mac --arm64 --publish always",
+    "publish-win": "electron-builder build --win --x64 --publish always",
+    "publish-linux": "electron-builder build --linux --publish always"
   },
   "keywords": [],
   "author": "JW Tools Team",
@@ -34,14 +37,11 @@
     "directories": {
       "output": "dist"
     },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "advenimus",
-        "repo": "jwtools",
-        "releaseType": "release"
-      }
-    ],
+    "publish": {
+      "provider": "github",
+      "owner": "advenimus",
+      "repo": "jwtools"
+    },
     "mac": {
       "category": "public.app-category.utilities",
       "icon": "assets/mac_logo.icns",
