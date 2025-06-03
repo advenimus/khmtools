@@ -50,14 +50,14 @@ This will create distribution packages in the `dist` directory.
 
 ### 6. Create a GitHub Release
 
-1. Go to your GitHub repository: https://github.com/advenimus/jwtools
+1. Go to your GitHub repository: https://github.com/advenimus/khmtools
 2. Click on "Releases" in the right sidebar
 3. Click "Create a new release"
 4. Select the tag you just pushed (e.g., v1.0.2)
 5. Set the release title (e.g., "JW Tools v1.0.2")
 6. Add release notes describing the changes in this version
 7. Upload the distribution files from your `dist` folder:
-   - For Windows: `.exe` installer (e.g., `jwtools-1.0.2-arm64.exe`)
+   - For Windows: `.exe` installer (e.g., `khmtools-1.0.2-arm64.exe`)
    - For macOS: `.dmg` file
    - For Linux: `.AppImage`, `.deb`, and/or `.rpm` files
 8. Click "Publish release"
@@ -110,7 +110,7 @@ If updates aren't working:
 2. Verify that the GitHub release is published and contains the correct files
 3. Ensure the release tag matches the version in `package.json` (with 'v' prefix)
 4. Check the application logs for any error messages related to updates
-   - Logs are stored in `~/Library/Logs/jwtools/main.log` on macOS
+   - Logs are stored in `~/Library/Logs/khmtools/main.log` on macOS
    - The app expects files to be named consistently (e.g., `JW-Tools-1.0.2-arm64.dmg`)
 5. Verify that the GitHub repository URL in `package.json` is correct
 

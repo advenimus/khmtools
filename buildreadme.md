@@ -16,8 +16,8 @@ Before building the application, ensure you have the following installed:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/advenimus/jwtools.git
-   cd jwtools
+   git clone https://github.com/advenimus/khmtools.git
+   cd khmtools
    ```
 2. Install dependencies:
 

@@ -7,7 +7,7 @@ This guide explains how to add new tools or modify existing tools in the JW Tool
 The application now uses the following structure for tools:
 
 ```
-jwtools/
+khmtools/
   ├── main.js               # Main Electron application
   ├── preload.js            # Preload script for IPC
   ├── renderer.js           # Frontend JavaScript

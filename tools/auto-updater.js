@@ -11,7 +11,7 @@ function initAutoUpdater(mainWindow) {
   autoUpdater.setFeedURL({
     provider: 'github',
     owner: 'advenimus',
-    repo: 'jwtools'
+    repo: 'khmtools'
   });
   
   autoUpdater.allowPrerelease = false;
@@ -23,7 +23,7 @@ function initAutoUpdater(mainWindow) {
   console.log('Checking for updates...');
   
   // Log the GitHub repository URL being used
-  const repo = `https://github.com/advenimus/jwtools/releases`;
+  const repo = `https://github.com/advenimus/khmtools/releases`;
   console.log('Update repository:', repo);
   
   // Check for updates after a short delay to ensure window is ready
