@@ -15,7 +15,7 @@ function createWindow() {
   // Create the browser window
   mainWindow = new BrowserWindow({
     width: 1200,
-    icon: path.join(__dirname, 'assets/logo.svg'),
+    icon: path.join(__dirname, process.platform === 'darwin' ? 'assets/mac_logo.icns' : 'assets/logo.png'),
     height: 800,
     minWidth: 800,
     minHeight: 600,
