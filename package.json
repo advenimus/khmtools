@@ -1,14 +1,15 @@
 {
   "name": "jwtools",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A collection of useful tools for JW AV Brothers",
   "main": "main.js",
   "scripts": {
     "start": "cross-env NODE_ENV=production electron .",
     "dev": "cross-env NODE_ENV=development electron .",
-    "build": "electron-builder build --mac && electron-builder build --win --x64 && electron-builder build --win --ia32",
-    "package-mac": "electron-builder build --mac --x64",
-    "package-win": "electron-builder build --win --x64 && electron-builder build --win --ia32"
+    "build": "electron-builder build --mac --arm64 --win --x64 --linux",
+    "build-mac": "electron-builder build --mac --arm64",
+    "build-win": "electron-builder build --win --x64",
+    "build-linux": "electron-builder build --linux"
   },
   "keywords": [],
   "author": "JW Tools Team",
@@ -29,27 +30,56 @@
   "build": {
     "appId": "com.jwtools.app",
     "productName": "JW Tools",
-    "artifactName": "JW-Tools-${version}-${arch}.${ext}",
+    "artifactName": "JW-Tools-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "dist"
     },
     "publish": [
       {
         "provider": "github",
-        "owner": "advenimus"
+        "owner": "advenimus",
+        "repo": "jwtools",
+        "releaseType": "release"
       }
     ],
     "mac": {
-      "icon": "assets/mac_logo.icns"
+      "category": "public.app-category.utilities",
+      "icon": "assets/mac_logo.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["arm64"]
+        }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "assets/entitlements.mac.plist",
+      "entitlementsInherit": "assets/entitlements.mac.plist"
     },
     "win": {
       "icon": "assets/jw-tools-icon.png",
       "target": [
-        "nsis"
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
       ],
       "publisherName": "JW Tools Team",
       "verifyUpdateCodeSignature": false,
       "fileAssociations": []
+    },
+    "linux": {
+      "icon": "assets/jw-tools-icon.png",
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "maintainer": "JW Tools Team"
     },
     "nsis": {
       "oneClick": false,
