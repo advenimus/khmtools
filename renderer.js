@@ -91,7 +91,7 @@ if (logoLink && window.electronAPI) {
   logoLink.addEventListener('click', (e) => {
     e.preventDefault();
     // This opens the URL in the user's default browser in a new window
-    window.electronAPI.openExternal('https://github.com/advenimus/jwtools');
+    window.electronAPI.openExternal('https://github.com/advenimus/khmtools');
   });
 }
 
@@ -234,7 +234,7 @@ if (window.electronAPI) {
         releasesLink.addEventListener('click', (e) => {
           e.preventDefault();
           // This opens the URL in the user's default browser in a new window
-          window.electronAPI.openExternal('https://github.com/advenimus/jwtools/releases');
+          window.electronAPI.openExternal('https://github.com/advenimus/khmtools/releases');
         });
       }
     }, 100);
@@ -782,9 +782,37 @@ if (window.electronAPI) {
     mediaHelpPopup.classList.add('hidden');
   });
 
+  // Function to update UI based on current settings
+  function updateCustomMessageUI() {
+    if (customMessageEnabled.checked) {
+      custommsgStep.style.display = '';
+      if (customMessageTitle.value) {
+        custommsgStep.querySelector('.step-text').textContent = customMessageTitle.value;
+      }
+    } else {
+      custommsgStep.style.display = 'none';
+    }
+  }
+
   // Close settings popup with close button
   closeMediaSettingsBtn.addEventListener('click', () => {
-    mediaSettingsPopup.classList.add('hidden');
+    // Save settings before closing
+    const settings = {
+      enabled: customMessageEnabled.checked,
+      title: customMessageTitle.value,
+      message: customMessageText.value,
+      displayTime: parseInt(customMessageTime.value) * 1000
+    };
+    
+    window.electronAPI.saveCustomMessageSettings(settings)
+      .then(() => {
+        updateCustomMessageUI();
+        mediaSettingsPopup.classList.add('hidden');
+      })
+      .catch(error => {
+        console.error('Error saving custom message settings:', error);
+        mediaSettingsPopup.classList.add('hidden');
+      });
   });
   
   // Close settings popup with save button
@@ -801,13 +829,11 @@ if (window.electronAPI) {
       .then(result => {
         if (result && result.success) {
           document.getElementById('media-settings-status').textContent = 'Settings saved successfully';
-          document.getElementById('media-settings-status').style.color = '#4a6da7';
+          document.getElementById('media-settings-status').style.color = '#2563EB';
         }
+        updateCustomMessageUI();
       })
       .catch(error => console.error('Error saving custom message settings:', error));
-    
-    // Update the visibility of the custom message step based on new settings
-    custommsgStep.style.display = settings.enabled ? '' : 'none';
     
     mediaSettingsPopup.classList.add('hidden');
   });
@@ -815,7 +841,23 @@ if (window.electronAPI) {
   // Close settings popup when clicking outside
   mediaSettingsPopup.addEventListener('click', (e) => {
     if (e.target === mediaSettingsPopup) {
-      mediaSettingsPopup.classList.add('hidden');
+      // Save settings before closing
+      const settings = {
+        enabled: customMessageEnabled.checked,
+        title: customMessageTitle.value,
+        message: customMessageText.value,
+        displayTime: parseInt(customMessageTime.value) * 1000
+      };
+      
+      window.electronAPI.saveCustomMessageSettings(settings)
+        .then(() => {
+          updateCustomMessageUI();
+          mediaSettingsPopup.classList.add('hidden');
+        })
+        .catch(error => {
+          console.error('Error saving custom message settings:', error);
+          mediaSettingsPopup.classList.add('hidden');
+        });
     }
   });
   
@@ -829,18 +871,14 @@ if (window.electronAPI) {
   // Toggle custom message settings visibility when checkbox is clicked
   customMessageEnabled.addEventListener('change', () => {
     if (customMessageEnabled.checked) {
-      // Check if there's content to determine if step should be shown
-      custommsgStep.style.display = '';
-      
       // Show the settings panel
       customMessageSettings.classList.remove('hidden');
     } else {
-      // Hide the step when disabled
-      custommsgStep.style.display = 'none';
-      
       // Hide the settings panel
       customMessageSettings.classList.add('hidden');
     }
+    // Update UI immediately when checkbox changes
+    updateCustomMessageUI();
   });
   
   // Browse for OBS application

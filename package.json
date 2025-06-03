@@ -1,7 +1,7 @@
 {
-  "name": "jwtools",
+  "name": "khmtools",
   "version": "1.0.8",
-  "description": "A collection of useful tools for JW AV Brothers",
+  "description": "A collection of useful tools for Kingdom Hall Media operations",
   "main": "main.js",
   "scripts": {
     "start": "cross-env NODE_ENV=production electron .",
@@ -15,11 +15,11 @@
     "publish-linux": "electron-builder build --linux --publish always"
   },
   "keywords": [],
-  "author": "JW Tools Team",
+  "author": "KHM Tools Team",
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/advenimus/jwtools.git"
+    "url": "https://github.com/advenimus/khmtools.git"
   },
   "dependencies": {
     "electron-log": "^5.3.2",
@@ -31,16 +31,16 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.jwtools.app",
-    "productName": "JW Tools",
-    "artifactName": "JW-Tools-${version}-${os}-${arch}.${ext}",
+    "appId": "com.khmtools.app",
+    "productName": "KHM Tools",
+    "artifactName": "KHM-Tools-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "dist"
     },
     "publish": {
       "provider": "github",
       "owner": "advenimus",
-      "repo": "jwtools"
+      "repo": "khmtools"
     },
     "mac": {
       "category": "public.app-category.utilities",
@@ -61,25 +61,25 @@
       "entitlementsInherit": "assets/entitlements.mac.plist"
     },
     "win": {
-      "icon": "assets/jw-tools-icon.png",
+      "icon": "assets/logo.svg",
       "target": [
         {
           "target": "nsis",
           "arch": ["x64"]
         }
       ],
-      "publisherName": "JW Tools Team",
+      "publisherName": "KHM Tools Team",
       "verifyUpdateCodeSignature": false,
       "fileAssociations": []
     },
     "linux": {
-      "icon": "assets/jw-tools-icon.png",
+      "icon": "assets/logo.svg",
       "target": [
         "AppImage",
         "deb"
       ],
       "category": "Utility",
-      "maintainer": "JW Tools Team"
+      "maintainer": "KHM Tools Team"
     },
     "nsis": {
       "oneClick": false,
@@ -89,7 +89,7 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "runAfterFinish": true,
-      "shortcutName": "JW Tools"
+      "shortcutName": "KHM Tools"
     }
   }
 }

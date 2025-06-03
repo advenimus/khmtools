@@ -15,7 +15,7 @@ function createWindow() {
   // Create the browser window
   mainWindow = new BrowserWindow({
     width: 1200,
-    icon: path.join(__dirname, 'assets/jw-tools-icon.png'),
+    icon: path.join(__dirname, 'assets/logo.svg'),
     height: 800,
     minWidth: 800,
     minHeight: 600,
@@ -29,7 +29,7 @@ function createWindow() {
     resizable: true, 
     show: false,
     backgroundColor: '#f5f5f5',
-    title: 'JW Tools',
+    title: 'KHM Tools',
     fullscreenable: true,
     center: true
   });
