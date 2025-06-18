@@ -15,7 +15,7 @@ function readAppSettings() {
   } catch (error) {
     console.error('Error reading app settings:', error);
   }
-  return { alwaysMaximize: false, defaultTool: 'welcome-screen' };
+  return { alwaysMaximize: false, defaultTool: 'welcome-screen', runAtLogon: false };
 }
 
 // Function to save app settings
@@ -33,7 +33,11 @@ function saveAppSettings(settings) {
 function resetAllSettings() {
   try {
     // Clear app settings
-    saveAppSettings({ alwaysMaximize: false, defaultTool: 'welcome-screen' });
+    saveAppSettings({ alwaysMaximize: false, defaultTool: 'welcome-screen', runAtLogon: false });
+    
+    // Disable auto-launch when resetting
+    const { AutoLaunch } = require('./auto-launch');
+    AutoLaunch.disable();
     
     // Add code to reset other tool settings if needed
     // This could call reset functions from other modules

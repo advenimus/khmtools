@@ -24,7 +24,7 @@
       </div>
       <div class="title-container">
         <h1>KHM Tools</h1>
-        <p>A collection of useful tools</p>
+        <p>A collection of useful tools for Kingdom Hall Media (KHM) assignments.</p>
       </div>
       <div class="app-settings-container">
         <button id="app-settings-btn" class="app-settings-button" aria-label="Application Settings">
@@ -66,7 +66,7 @@
         <!-- Tool content will be loaded here -->
         <div id="welcome-screen" class="welcome-screen">
           <h2>Welcome to KHM Tools</h2>
-          <p>A collection of useful tools for Kingdom Hall Media (KHM) assignments. Each tool has a help button which explains its use.</p>
+          <p>This program is collection of useful tools for Kingdom Hall Media (KHM) assignments that will make each role easier. Each included tool has a help button which explains its use in more detail. Click the settings icon at the top left for application settings.</p>
         </div>
         
         <!-- Zoom Attendance Calculator Tool -->
@@ -151,39 +151,19 @@
         <div id="start-zoom" class="tool-panel hidden">
           <div class="tool-header">
             <h2>Start Zoom</h2>
-            <button id="zoom-settings-btn" class="settings-button" aria-label="Settings">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-              </svg>
-            </button>
           </div>
           <div class="zoom-content">
-            <p class="tool-instructions">Click the button below to launch Zoom:</p>
+            <p class="tool-instructions">Click the button below to launch Zoom with your configured meeting:</p>
             <button id="launch-zoom-btn" class="launch-zoom-btn">Launch Zoom</button>
             <p id="zoom-status" class="zoom-status"></p>
+            <p class="settings-hint">Configure meeting ID and Zoom path in Settings (⚙️ button at top right)</p>
           </div>
         </div>
         
         <!-- Media Launcher Tool -->
         <div id="media-launcher" class="tool-panel hidden">
           <div class="tool-header">
-            <h2>Zoom Media Launcher</h2>
-            <div class="tool-header-buttons">
-              <button id="media-help-btn" class="help-button" aria-label="Help">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                </svg>
-              </button>
-              <button id="media-settings-btn" class="settings-button" aria-label="Media Settings">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="3"></circle>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                </svg>
-              </button>
-            </div>
+            <h2>Media Launcher</h2>
           </div>
           <div class="media-launcher-content">
             <p class="tool-instructions">Launch all your meeting media tools with one click:</p>
@@ -197,7 +177,8 @@
               </ul>
             </div>
             
-            <button id="launch-media-btn" class="launch-media-btn">Launch Media Tools</button>
+            <button id="launch-media-btn" class="launch-media-btn">Start Meeting</button>
+            <p class="settings-hint">Configure tools, meeting ID, and application paths in Settings (⚙️ button at top right)</p>
             
             <!-- Progress container (hidden by default) -->
             <div id="launch-progress-container" class="launch-progress-container hidden">
@@ -218,198 +199,230 @@
                 </div>
               </div>
             </div>
-            
-            <!-- Media Settings Panel -->
           </div>
         </div>
       </div>
     </div>
   </div>
   
-  <!-- Application Settings Popup -->
-  <div id="app-settings-popup" class="app-settings-popup hidden">
-    <div class="app-settings-content">
-      <div class="app-settings-header">
-        <h2>Application Settings</h2>
+  <!-- Unified Settings Popup -->
+  <div id="app-settings-popup" class="unified-settings-popup hidden">
+    <div class="unified-settings-content">
+      <div class="unified-settings-header">
+        <h2>KHM Tools Settings</h2>
         <button id="close-app-settings" class="close-app-settings">×</button>
       </div>
-      <div class="app-settings-body">
-        <div class="settings-option">
-          <div class="settings-group-title">Window Options</div>
-          <div class="checkbox-wrapper">
-            <input type="checkbox" id="always-maximize" name="always-maximize">
-            <label for="always-maximize">Always Open Maximized</label>
+      
+      <div class="unified-settings-body">
+        <!-- Settings Navigation -->
+        <div class="settings-nav">
+          <ul class="settings-nav-list">
+            <li><button id="nav-general" class="settings-nav-btn active">General</button></li>
+            <li><button id="nav-meetings" class="settings-nav-btn">Meeting Settings</button></li>
+            <li><button id="nav-media-launcher" class="settings-nav-btn">Media Launcher</button></li>
+            <li><button id="nav-zoom" class="settings-nav-btn">Zoom Tools</button></li>
+            <li><button id="nav-paths" class="settings-nav-btn">Application Paths</button></li>
+          </ul>
+        </div>
+
+        <!-- Settings Content Area -->
+        <div class="settings-content">
+          <!-- General Settings Panel -->
+          <div id="general-settings" class="settings-panel active">
+            <h3>General Application Settings</h3>
+            
+            <div class="settings-option">
+              <div class="settings-group-title">Window Options</div>
+              <div class="checkbox-wrapper">
+                <input type="checkbox" id="always-maximize" name="always-maximize">
+                <label for="always-maximize">Always Open Maximized</label>
+              </div>
+              <p class="settings-description">When enabled, the application will always open maximized to fill the screen.</p>
+              
+              <div class="checkbox-wrapper">
+                <input type="checkbox" id="run-at-logon" name="run-at-logon">
+                <label for="run-at-logon">Run at Logon</label>
+              </div>
+              <p class="settings-description">Automatically start KHM Tools when you log into your computer.</p>
+            </div>
+            
+            <div class="settings-option">
+              <div class="settings-group-title">Startup Options</div>
+              <label for="default-tool">Default open to tool:</label>
+              <select id="default-tool" name="default-tool" class="settings-select">
+                <option value="welcome-screen">Welcome Screen</option>
+                <option value="zoom-attendance-calculator">Zoom Attendance Calculator</option>
+                <option value="start-zoom">Start Zoom</option>
+                <option value="media-launcher">Media Launcher</option>
+              </select>
+              <p class="settings-description">Select which tool should automatically open when the application launches.</p>
+            </div>
+            
+            <div class="settings-option">
+              <div class="settings-group-title">Developer Options</div>
+              <p class="settings-description">Toggle the Chrome DevTools for debugging and development.</p>
+              <button id="toggle-dev-tools-btn" class="toggle-dev-tools-btn">Toggle Developer Tools</button>
+              <p class="settings-hint">You can also use F12 or Cmd+Option+I</p>
+            </div>
+            
+            <div class="settings-option reset-settings-option">
+              <div class="settings-group-title">Reset Settings</div>
+              <p class="settings-description">Reset all settings for all tools back to their default values.</p>
+              <button id="reset-settings-btn" class="reset-settings-btn">Reset to Defaults</button>
+              <div id="reset-confirmation" class="reset-confirmation hidden">Double-click to confirm reset</div>
+            </div>
           </div>
-          <p class="settings-description">When enabled, the application will always open maximized to fill the screen.</p>
-        </div>
-        
-        <div class="settings-option">
-          <div class="settings-group-title">Startup Options</div>
-          <label for="default-tool">Default open to tool:</label>
-          <select id="default-tool" name="default-tool" class="settings-select">
-            <option value="welcome-screen">Welcome Screen</option>
-            <option value="zoom-attendance-calculator">Zoom Attendance Calculator</option>
-            <option value="start-zoom">Start Zoom</option>
-            <option value="media-launcher">Media Launcher</option>
-          </select>
-          <p class="settings-description">Select which tool should automatically open when the application launches.</p>
-        </div>
-        
-        <div class="settings-option">
-          <div class="settings-group-title">Developer Options</div>
-          <p class="settings-description">Toggle the Chrome DevTools for debugging and development.</p>
-          <button id="toggle-dev-tools-btn" class="toggle-dev-tools-btn">Toggle Developer Tools</button>
-          <p class="settings-hint">You can also use F12 or Cmd+Option+I</p>
-        </div>
-        
-        <div class="settings-option reset-settings-option">
-          <div class="settings-group-title">Reset Settings</div>
-          <p class="settings-description">Reset all settings for all tools back to their default values.</p>
-          <button id="reset-settings-btn" class="reset-settings-btn">Reset to Defaults</button>
-          <div id="reset-confirmation" class="reset-confirmation hidden">Double-click to confirm reset</div>
-        </div>
-      </div>
-      <div class="app-settings-footer">
-        <button id="save-app-settings" class="save-app-settings">Save Settings</button>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Media Settings Popup -->
-  <div id="media-settings-popup" class="app-settings-popup hidden">
-    <div class="app-settings-content">
-      <div class="app-settings-header">
-        <h2>Media Launcher Settings</h2>
-        <button id="close-media-settings-btn" class="close-app-settings">×</button>
-      </div>
-      <div class="app-settings-body">
-        <p>Configure the paths to your media applications:</p>
-        
-        <div class="settings-option">
-          <div class="settings-group-title">OBS Studio</div>
-          <button id="browse-obs-path-btn" class="browse-btn">Browse for OBS</button>
-          <p id="current-obs-path" class="current-path">Using default path</p>
-        </div>
-        
-        <div class="settings-option">
-          <div class="settings-group-title">Meeting Media Manager</div>
-          <button id="browse-media-manager-path-btn" class="browse-btn">Browse for Meeting Media Manager</button>
-          <p id="current-media-manager-path" class="current-path">Using default path</p>
-        </div>
-        
-        <div class="settings-option">
-          <div class="settings-group-title">Zoom</div>
-          <button id="browse-media-zoom-path-btn" class="browse-btn">Browse for Zoom</button>
-          <p id="current-media-zoom-path" class="current-path">Using default path</p>
-        </div>
-        
-        <div class="settings-option">
-          <div class="settings-group-title">Custom Message Settings</div>
-          <div class="checkbox-wrapper">
-            <input type="checkbox" id="custom-message-enabled" name="custom-message-enabled">
-            <label for="custom-message-enabled">Enable Custom Message</label>
+
+          <!-- Meeting Settings Panel -->
+          <div id="meeting-settings" class="settings-panel">
+            <h3>Universal Meeting Settings</h3>
+            
+            <div class="settings-option">
+              <div class="settings-group-title">Meeting Credentials</div>
+              <div class="form-group">
+                <label for="universal-meeting-id">Meeting ID:</label>
+                <input type="text" id="universal-meeting-id" class="settings-input" placeholder="Enter your recurring meeting ID">
+                <p class="settings-description">This meeting ID will be used by all Zoom tools in the application.</p>
+              </div>
+            </div>
+
+            <div class="settings-option">
+              <div class="settings-group-title">Meeting Schedule</div>
+              
+              <div class="form-group">
+                <label for="midweek-day">Midweek Meeting:</label>
+                <div class="meeting-time-row">
+                  <select id="midweek-day" class="settings-select">
+                    <option value="monday">Monday</option>
+                    <option value="tuesday">Tuesday</option>
+                    <option value="wednesday">Wednesday</option>
+                    <option value="thursday">Thursday</option>
+                    <option value="friday">Friday</option>
+                  </select>
+                  <span>at</span>
+                  <input type="time" id="midweek-time" class="settings-input time-input" value="19:30">
+                </div>
+                <p class="settings-description">Set your midweek meeting day and time.</p>
+              </div>
+              
+              <div class="form-group">
+                <label for="weekend-day">Weekend Meeting:</label>
+                <div class="meeting-time-row">
+                  <select id="weekend-day" class="settings-select">
+                    <option value="saturday">Saturday</option>
+                    <option value="sunday">Sunday</option>
+                  </select>
+                  <span>at</span>
+                  <input type="time" id="weekend-time" class="settings-input time-input" value="10:00">
+                </div>
+                <p class="settings-description">Set your weekend meeting day and time.</p>
+              </div>
+            </div>
           </div>
-          <p class="settings-description">When enabled, a custom message will be displayed instead of the default custommsg sync check.</p>
-          
-          <div id="custom-message-settings" class="custom-message-settings">
+
+          <!-- Media Launcher Settings Panel -->
+          <div id="media-launcher-settings" class="settings-panel">
+            <h3>Media Launcher Settings</h3>
+            
+            <div class="settings-option">
+              <div class="settings-group-title">Tool Selection</div>
+              <p class="settings-description">Choose which tools to launch when you click "Start Meeting". At least one tool must be enabled.</p>
+              
+              <div class="checkbox-wrapper">
+                <input type="checkbox" id="toggle-custom-message" name="toggle-custom-message">
+                <label for="toggle-custom-message">Enable Custom Message</label>
+              </div>
+              
+              <div class="checkbox-wrapper">
+                <input type="checkbox" id="toggle-obs" name="toggle-obs">
+                <label for="toggle-obs">Launch OBS Studio</label>
+              </div>
+              
+              <div class="checkbox-wrapper">
+                <input type="checkbox" id="toggle-media-manager" name="toggle-media-manager">
+                <label for="toggle-media-manager">Launch Meeting Media Manager</label>
+              </div>
+              
+              <div class="checkbox-wrapper">
+                <input type="checkbox" id="toggle-zoom" name="toggle-zoom">
+                <label for="toggle-zoom">Launch Zoom</label>
+              </div>
+            </div>
+
+            <div class="settings-option">
+              <div class="settings-group-title">Custom Message Settings</div>
+              <p class="settings-description">Configure the message shown when Custom Message is enabled.</p>
+              
+              <div id="custom-message-settings" class="custom-message-settings">
+                <div class="form-group">
+                  <label for="custom-message-title">Title:</label>
+                  <input type="text" id="custom-message-title" class="settings-input" placeholder="Enter custom title">
+                </div>
+                
+                <div class="form-group">
+                  <label for="custom-message-text">Message:</label>
+                  <textarea id="custom-message-text" class="settings-textarea" placeholder="Enter custom message text"></textarea>
+                </div>
+                
+                <div class="form-group">
+                  <label for="custom-message-time">Display Time (seconds):</label>
+                  <input type="number" id="custom-message-time" class="settings-input" min="1" max="30" value="5">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Zoom Tools Settings Panel -->
+          <div id="zoom-settings" class="settings-panel">
+            <h3>Zoom Tools Settings</h3>
+            <p class="settings-description">These settings apply to all Zoom-related tools. The Meeting ID is configured in the Meeting Settings section.</p>
+            
+            <div class="settings-option">
+              <div class="settings-group-title">Zoom Attendance Calculator</div>
+              <p class="settings-description">No additional settings required. This tool uses the universal meeting ID for its calculations.</p>
+            </div>
+          </div>
+
+          <!-- Application Paths Settings Panel -->
+          <div id="paths-settings" class="settings-panel">
+            <h3>Application Paths</h3>
+            <p class="settings-description">Configure the paths to your media applications (optional - uses defaults if not set):</p>
+            
             <div class="form-group">
-              <label for="custom-message-title">Title:</label>
-              <input type="text" id="custom-message-title" class="settings-input" placeholder="Enter custom title">
+              <label>OBS Studio:</label>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <button id="browse-obs-path-btn" class="browse-btn">Browse</button>
+                <p id="current-obs-path" class="current-path" style="margin: 0; flex: 1;">Using default path</p>
+              </div>
             </div>
             
             <div class="form-group">
-              <label for="custom-message-text">Message:</label>
-              <textarea id="custom-message-text" class="settings-textarea" placeholder="Enter custom message text"></textarea>
+              <label>Meeting Media Manager:</label>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <button id="browse-media-manager-path-btn" class="browse-btn">Browse</button>
+                <p id="current-media-manager-path" class="current-path" style="margin: 0; flex: 1;">Using default path</p>
+              </div>
             </div>
             
             <div class="form-group">
-              <label for="custom-message-time">Display Time (seconds):</label>
-              <input type="number" id="custom-message-time" class="settings-input" min="1" max="30" value="5">
+              <label>Zoom Application:</label>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <button id="browse-zoom-path-btn" class="browse-btn">Browse</button>
+                <p id="current-zoom-path" class="current-path" style="margin: 0; flex: 1;">Using default path</p>
+              </div>
+              <p class="settings-description">This Zoom application will be used by all Zoom tools (Media Launcher and Start Zoom).</p>
             </div>
           </div>
         </div>
-        
       </div>
-      <div class="app-settings-footer">
-        <p id="media-settings-status" class="settings-status"></p>
-        <button id="save-media-settings-btn" class="save-app-settings">Close</button>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Media Help Popup -->
-  <div id="media-help-popup" class="app-settings-popup hidden">
-    <div class="app-settings-content">
-      <div class="app-settings-header">
-        <h2>Media Launcher Help</h2>
-        <button id="close-media-help-btn" class="close-app-settings">×</button>
-      </div>
-      <div class="app-settings-body">
-        <h3>Using the Media Launcher</h3>
-        <p>This tool is designed to launch the appropriate applications in the correct order for use with Meeting Media Manager (M³), a powerful media management tool for congregation meetings.</p>
-        
-        <h3>Resources</h3>
-        <ul>
-          <li><strong>Meeting Media Manager (M³):</strong> <a href="https://sircharlo.github.io/meeting-media-manager/" class="external-link">https://sircharlo.github.io/meeting-media-manager/</a></li>
-          <li><strong>M³ Documentation:</strong> <a href="https://sircharlo.github.io/meeting-media-manager/using-at-a-kingdom-hall" class="external-link">https://sircharlo.github.io/meeting-media-manager/using-at-a-kingdom-hall</a></li>
-          <li><strong>OBS Studio:</strong> <a href="https://obsproject.com/download" class="external-link">https://obsproject.com/download</a></li>
-          <li><strong>Zoom:</strong> <a href="https://zoom.us/download" class="external-link">https://zoom.us/download</a></li>
-        </ul>
-        
-        <h3>How This Tool Works</h3>
-        <p>Our Media Launcher complements M³ by ensuring that OBS Studio, Meeting Media Manager, and Zoom are all launched in the correct sequence, which helps streamline the setup process for congregation meetings.</p>
-        <ul>
-          <li>Configure the paths to your applications in settings first</li>
-          <li>Click "Launch Media Tools" to automatically start all applications in sequence</li>
-          <li>Wait for each application to start before the next one launches</li>
-        </ul>
-        
-        <h3>Custom Message Feature</h3>
-        <p>The custom message option is particularly useful when you've set up folder monitoring in M³ and are using cloud storage solutions like OneDrive or Google Drive for remote file adding.</p>
-        <p>When enabled, this feature displays a customizable popup message that reminds the brother operating the system to allow sufficient time for cloud synchronization before proceeding. This ensures that any media files added remotely have been properly synchronized to the local machine before the meeting begins.</p>
-        <p>To configure this feature:</p>
-        <ul>
-          <li>Enable the Custom Message option in Media Launcher Settings</li>
-          <li>Set your preferred title and message text</li>
-          <li>Adjust the display time as needed</li>
-        </ul>
-      </div>
-      <div class="app-settings-footer">
-        <button id="close-media-help-footer-btn" class="save-app-settings">Close</button>
+      
+      <div class="unified-settings-footer">
+        <p id="settings-status" class="settings-status"></p>
+        <button id="save-unified-settings" class="save-app-settings">Save Settings</button>
       </div>
     </div>
   </div>
   
-  <!-- Zoom Settings Popup -->
-  <div id="zoom-settings-popup" class="app-settings-popup hidden">
-    <div class="app-settings-content">
-      <div class="app-settings-header">
-        <h2>Zoom Settings</h2>
-        <button id="close-zoom-settings" class="close-app-settings">×</button>
-      </div>
-      <div class="app-settings-body">
-        <div class="settings-option">
-          <div class="settings-group-title">Zoom Application</div>
-          <p>Configure the path to your Zoom application:</p>
-          <button id="browse-zoom-path-btn" class="browse-btn">Browse for Zoom</button>
-          <p id="current-zoom-path" class="current-path">No path configured</p>
-        </div>
-        
-        <div class="settings-option">
-          <div class="settings-group-title">Meeting Settings</div>
-          <div class="form-group">
-            <label for="zoom-meeting-id">Meeting ID:</label>
-            <input type="text" id="zoom-meeting-id" class="settings-input" placeholder="Enter your recurring meeting ID">
-            <p class="settings-description">Enter the meeting ID for your recurring Zoom meeting. You can enter just the ID (e.g., "1234567890"), ID with password (e.g., "1234567890,password123"), or paste a Zoom meeting URL.</p>
-          </div>
-        </div>
-      </div>
-      <div class="app-settings-footer">
-        <p id="meeting-id-status" class="settings-status"></p>
-        <button id="save-zoom-settings" class="save-app-settings">Save Settings</button>
-      </div>
-    </div>
-  </div>
   
   <script src="renderer.js"></script>
 </body>

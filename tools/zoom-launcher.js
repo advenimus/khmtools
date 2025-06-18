@@ -44,11 +44,15 @@ function getDefaultZoomPath() {
 function launchZoom() {
   return new Promise((resolve, reject) => {
     const config = readZoomConfig();
-    const zoomPath = config.zoomPath;
-    const meetingId = config.meetingId;
+    const zoomPath = config.zoomPath || getDefaultZoomPath();
+    
+    // Get meeting ID from universal settings
+    const { readUniversalSettings } = require('./universal-settings');
+    const universalSettings = readUniversalSettings();
+    const meetingId = universalSettings.meetingId;
     
     if (!zoomPath) {
-      return resolve({ success: false, message: 'Zoom path not configured' });
+      return resolve({ success: false, message: 'Zoom application not found. Please install Zoom or configure the path manually in settings.' });
     }
 
     const pathExists = () => {
@@ -116,21 +120,23 @@ function initZoomLauncher() {
   // Handle request to get the current Zoom path
   ipcMain.handle('get-zoom-path', async () => {
     const config = readZoomConfig();
-    return config.zoomPath || '';
+    return config.zoomPath || getDefaultZoomPath();
   });
 
-  // Handle request to get the meeting ID
+  // Handle request to get the meeting ID (now from universal settings)
   ipcMain.handle('get-zoom-meeting-id', async () => {
-    const config = readZoomConfig();
-    return config.meetingId || '';
+    const { readUniversalSettings } = require('./universal-settings');
+    const universalSettings = readUniversalSettings();
+    return universalSettings.meetingId || '';
   });
 
-  // Handle request to save the meeting ID
+  // Handle request to save the meeting ID (now to universal settings)
   ipcMain.handle('save-zoom-meeting-id', async (event, meetingId) => {
-    const config = readZoomConfig();
-    config.meetingId = meetingId;
-    saveZoomConfig(config);
-    return { success: true, message: 'Meeting ID saved successfully' };
+    const { readUniversalSettings, saveUniversalSettings } = require('./universal-settings');
+    const universalSettings = readUniversalSettings();
+    universalSettings.meetingId = meetingId;
+    const success = saveUniversalSettings(universalSettings);
+    return { success, message: success ? 'Meeting ID saved successfully' : 'Failed to save meeting ID' };
   });
   
   // Handle request to browse for Zoom application

@@ -24,6 +24,12 @@ function readMediaConfig() {
       enabled: true,
       title: 'Display Custom Message',
       message: 'Welcome to the meeting!'
+    },
+    toolToggles: {
+      customMessage: true,
+      launchOBS: true,
+      launchMediaManager: true,
+      launchZoom: true
     }
   };
 }
@@ -52,10 +58,10 @@ function getDefaultOBSPath() {
 // Get the default Media Manager path based on the platform
 function getDefaultMediaManagerPath() {
   if (process.platform === 'darwin') {
-    return '/Applications/JWLibrary Media.app'; // macOS JW Media app bundle
+    return '/Applications/Meeting Media Manager.app'; // macOS Meeting Media Manager app bundle
   } else if (process.platform === 'win32') {
     // Default path for Windows (adjust as needed)
-    return 'C:\\Program Files\\JWLibrary Media\\JWLibraryMedia.exe';
+    return 'C:\\Program Files\\Meeting Media Manager\\Meeting Media Manager.exe';
   }
   return '';
 }
@@ -64,10 +70,10 @@ function getDefaultMediaManagerPath() {
 function launchOBS() {
   return new Promise((resolve, reject) => {
     const config = readMediaConfig();
-    const obsPath = config.obsPath;
+    const obsPath = config.obsPath || getDefaultOBSPath();
     
     if (!obsPath) {
-      return resolve({ success: false, message: 'OBS path not configured' });
+      return resolve({ success: false, message: 'OBS application not found. Please install OBS Studio or configure the path manually in settings.' });
     }
 
     // Check if path exists
@@ -121,10 +127,10 @@ function launchOBS() {
 function launchMediaManager() {
   return new Promise((resolve, reject) => {
     const config = readMediaConfig();
-    const mediaManagerPath = config.mediaManagerPath;
+    const mediaManagerPath = config.mediaManagerPath || getDefaultMediaManagerPath();
     
     if (!mediaManagerPath) {
-      return resolve({ success: false, message: 'Media Manager path not configured' });
+      return resolve({ success: false, message: 'Meeting Media Manager not found. Please install Meeting Media Manager or configure the path manually in settings.' });
     }
 
     // Check if path exists
@@ -179,11 +185,18 @@ function launchMediaManager() {
 // Launch Media Zoom function
 function launchMediaZoom() {
   return new Promise((resolve, reject) => {
-    const config = readMediaConfig();
-    const mediaZoomPath = config.mediaZoomPath;
+    // Use the same Zoom path as the zoom-launcher tool
+    const { readZoomConfig, getDefaultZoomPath } = require('./zoom-launcher');
+    const zoomConfig = readZoomConfig();
+    const mediaZoomPath = zoomConfig.zoomPath || getDefaultZoomPath();
+    
+    // Get meeting ID from universal settings
+    const { readUniversalSettings } = require('./universal-settings');
+    const universalSettings = readUniversalSettings();
+    const meetingId = universalSettings.meetingId;
     
     if (!mediaZoomPath) {
-      return resolve({ success: false, message: 'Media Zoom path not configured' });
+      return resolve({ success: false, message: 'Zoom application path not configured and no default found' });
     }
 
     // Check if path exists
@@ -200,33 +213,105 @@ function launchMediaZoom() {
       return resolve({ success: false, message: 'Media Zoom application not found' });
     }
 
-    try {
-      if (process.platform === 'darwin') {
-        // macOS: Launch app via 'open' command
-        exec(`open "${mediaZoomPath}"`, (error) => {
-          if (error) {
-            console.error('Error launching Media Zoom:', error);
-            resolve({ success: false, message: 'Failed to launch Media Zoom: ' + error.message });
-          } else {
-            resolve({ success: true, message: 'Media Zoom launched successfully' });
+    // Function to launch Zoom meeting using hidden browser window
+    const launchWithHiddenWindow = (meetingId) => {
+      const { BrowserWindow } = require('electron');
+      
+      // Use the standard Zoom HTTP URL
+      const zoomUrl = `https://zoom.us/j/${meetingId}`;
+      
+      try {
+        // Create a hidden browser window to navigate to Zoom URL
+        const hiddenWindow = new BrowserWindow({
+          show: false,
+          width: 1,
+          height: 1,
+          webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true
           }
         });
-      } else if (process.platform === 'win32') {
-        // Windows: Launch executable with start command to avoid blocking
-        const mediaZoomDir = path.dirname(mediaZoomPath);
-        const mediaZoomExe = path.basename(mediaZoomPath);
+
+        // Navigate to the Zoom URL
+        hiddenWindow.loadURL(zoomUrl);
         
-        // Use start command with /b flag to run in background without waiting
-        exec(`start /b /d "${mediaZoomDir}" "" "${mediaZoomExe}"`, (error) => {
-          if (error) {
-            console.error('Error launching Media Zoom:', error);
-            resolve({ success: false, message: 'Failed to launch Media Zoom: ' + error.message });
-          } else {
-            resolve({ success: true, message: 'Media Zoom launched successfully' });
+        // Wait a bit for the page to load and trigger the app launch
+        setTimeout(() => {
+          // Close the hidden window after a delay
+          if (!hiddenWindow.isDestroyed()) {
+            hiddenWindow.close();
           }
-        });
+        }, 3000); // 3 second delay to allow Zoom redirect to process
+
+        console.log(`Launching Zoom meeting silently with URL: ${zoomUrl}`);
+        return true;
+      } catch (error) {
+        console.error('Error launching Zoom with hidden window:', error);
+        return false;
+      }
+    };
+
+    try {
+      if (meetingId && meetingId.trim() !== '') {
+        // Clean the meeting ID (remove spaces, dashes, etc.)
+        const cleanMeetingId = meetingId.replace(/[^0-9]/g, '');
+        
+        if (cleanMeetingId.length >= 9) { // Valid Zoom meeting IDs are at least 9 digits
+          if (launchWithHiddenWindow(cleanMeetingId)) {
+            resolve({ 
+              success: true, 
+              message: `Zoom meeting launched with ID ${cleanMeetingId}. The Zoom app should open shortly. If you're the host and signed in, you can start the meeting.` 
+            });
+          } else {
+            // Fallback: Just open Zoom app
+            if (process.platform === 'darwin') {
+              exec(`open "${mediaZoomPath}"`, (error) => {
+                if (error) {
+                  resolve({ success: false, message: 'Failed to launch Zoom: ' + error.message });
+                } else {
+                  resolve({ success: true, message: `Zoom launched. Please manually start meeting ${meetingId}.` });
+                }
+              });
+            } else if (process.platform === 'win32') {
+              const mediaZoomDir = path.dirname(mediaZoomPath);
+              const mediaZoomExe = path.basename(mediaZoomPath);
+              const command = `start /b /d "${mediaZoomDir}" "" "${mediaZoomExe}"`;
+              exec(command, (error) => {
+                if (error) {
+                  resolve({ success: false, message: 'Failed to launch Zoom: ' + error.message });
+                } else {
+                  resolve({ success: true, message: `Zoom launched. Please manually start meeting ${meetingId}.` });
+                }
+              });
+            }
+          }
+        } else {
+          resolve({ success: false, message: `Invalid meeting ID format: ${meetingId}. Please enter a valid meeting ID (at least 9 digits).` });
+        }
       } else {
-        resolve({ success: false, message: 'Unsupported platform' });
+        // No meeting ID, just open Zoom app
+        if (process.platform === 'darwin') {
+          exec(`open "${mediaZoomPath}"`, (error) => {
+            if (error) {
+              resolve({ success: false, message: 'Failed to launch Zoom: ' + error.message });
+            } else {
+              resolve({ success: true, message: 'Zoom launched successfully' });
+            }
+          });
+        } else if (process.platform === 'win32') {
+          const mediaZoomDir = path.dirname(mediaZoomPath);
+          const mediaZoomExe = path.basename(mediaZoomPath);
+          const command = `start /b /d "${mediaZoomDir}" "" "${mediaZoomExe}"`;
+          exec(command, (error) => {
+            if (error) {
+              resolve({ success: false, message: 'Failed to launch Zoom: ' + error.message });
+            } else {
+              resolve({ success: true, message: 'Zoom launched successfully' });
+            }
+          });
+        } else {
+          resolve({ success: false, message: 'Unsupported platform' });
+        }
       }
     } catch (error) {
       console.error('Error launching Media Zoom:', error);
@@ -247,7 +332,7 @@ function initMediaLauncher(mainWindow) {
   // Handle request to get OBS path
   ipcMain.handle('get-obs-path', async () => {
     const config = readMediaConfig();
-    return config.obsPath || '';
+    return config.obsPath || getDefaultOBSPath();
   });
 
   // Handle request to browse for OBS
@@ -285,7 +370,7 @@ function initMediaLauncher(mainWindow) {
   // Handle request to get Media Manager path
   ipcMain.handle('get-media-manager-path', async () => {
     const config = readMediaConfig();
-    return config.mediaManagerPath || '';
+    return config.mediaManagerPath || getDefaultMediaManagerPath();
   });
 
   // Handle request to browse for Media Manager
@@ -298,7 +383,7 @@ function initMediaLauncher(mainWindow) {
       : [{ name: 'Executables', extensions: ['exe'] }];
     
     const result = await dialog.showOpenDialog({
-      title: 'Select JW Library Media Application',
+      title: 'Select Meeting Media Manager Application',
       defaultPath: fs.existsSync(defaultDir) ? defaultDir : app.getPath('home'),
       properties: ['openFile'],
       filters: filters
@@ -320,38 +405,7 @@ function initMediaLauncher(mainWindow) {
     return await launchMediaZoom();
   });
 
-  // Handle request to get Media Zoom path
-  ipcMain.handle('get-media-zoom-path', async () => {
-    const config = readMediaConfig();
-    return config.mediaZoomPath || '';
-  });
-
-  // Handle request to browse for Media Zoom
-  ipcMain.handle('browse-for-media-zoom', async () => {
-    const defaultPath = '';
-    const defaultDir = app.getPath('home');
-    
-    const filters = process.platform === 'darwin' 
-      ? [{ name: 'Applications', extensions: ['app'] }]
-      : [{ name: 'Executables', extensions: ['exe'] }];
-    
-    const result = await dialog.showOpenDialog({
-      title: 'Select Media Zoom Application',
-      defaultPath: defaultDir,
-      properties: ['openFile'],
-      filters: filters
-    });
-    
-    if (!result.canceled && result.filePaths.length > 0) {
-      const mediaZoomPath = result.filePaths[0];
-      const config = readMediaConfig();
-      config.mediaZoomPath = mediaZoomPath;
-      saveMediaConfig(config);
-      return mediaZoomPath;
-    }
-    
-    return null;
-  });
+  // Media Zoom now uses the same path as zoom-launcher tool
 
   // Handle request to get custom message settings
   ipcMain.handle('get-custom-message-settings', async () => {
@@ -366,6 +420,21 @@ function initMediaLauncher(mainWindow) {
     saveMediaConfig(config);
     return { success: true, message: 'Custom message settings saved successfully' };
   });
+
+  // Handle request to get tool toggles
+  ipcMain.handle('get-tool-toggles', async () => {
+    const config = readMediaConfig();
+    return config.toolToggles || { customMessage: true, launchOBS: true, launchMediaManager: true, launchZoom: true };
+  });
+
+  // Handle request to save tool toggles
+  ipcMain.handle('save-tool-toggles', async (event, toggles) => {
+    const config = readMediaConfig();
+    config.toolToggles = toggles;
+    saveMediaConfig(config);
+    return { success: true, message: 'Tool toggles saved successfully' };
+  });
+
 }
 
 module.exports = {

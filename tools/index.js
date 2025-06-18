@@ -7,6 +7,8 @@ const zoomLauncher = require('./zoom-launcher');
 const mediaLauncher = require('./media-launcher');
 const zoomAttendance = require('./zoom-attendance');
 const autoUpdater = require('./auto-updater');
+const universalSettings = require('./universal-settings');
+const autoLaunch = require('./auto-launch');
 
 /**
  * Initialize all tools
@@ -19,6 +21,8 @@ function initializeAllTools(mainWindow) {
   mediaLauncher.initMediaLauncher(mainWindow);
   zoomAttendance.initZoomAttendance();
   autoUpdater.initAutoUpdater(mainWindow);
+  universalSettings.initUniversalSettings();
+  autoLaunch.AutoLaunch.init();
   
   console.log('All tools initialized successfully');
 }
@@ -29,5 +33,7 @@ module.exports = {
   mediaLauncher,
   zoomAttendance,
   autoUpdater,
+  universalSettings,
+  autoLaunch,
   initializeAllTools
 };

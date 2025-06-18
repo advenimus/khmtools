@@ -41,6 +41,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Developer tools
   toggleDevTools: () => ipcRenderer.invoke('toggle-dev-tools'),
   
+  // Auto-launch functions
+  autoLaunchEnable: () => ipcRenderer.invoke('auto-launch-enable'),
+  autoLaunchDisable: () => ipcRenderer.invoke('auto-launch-disable'),
+  autoLaunchIsEnabled: () => ipcRenderer.invoke('auto-launch-is-enabled'),
+  autoLaunchSet: (enabled) => ipcRenderer.invoke('auto-launch-set', enabled),
+  
   // Media Launcher functions
   launchOBS: () => ipcRenderer.invoke('launch-obs'),
   getOBSPath: () => ipcRenderer.invoke('get-obs-path'),
@@ -48,10 +54,25 @@ contextBridge.exposeInMainWorld('electronAPI', {
   launchMediaManager: () => ipcRenderer.invoke('launch-media-manager'),
   getMediaManagerPath: () => ipcRenderer.invoke('get-media-manager-path'),
   browseForMediaManager: () => ipcRenderer.invoke('browse-for-media-manager'),
-  getMediaZoomPath: () => ipcRenderer.invoke('get-media-zoom-path'),
-  browseForMediaZoom: () => ipcRenderer.invoke('browse-for-media-zoom'),
+  // Media Zoom now uses the same path as zoom-launcher
   launchMediaZoom: () => ipcRenderer.invoke('launch-media-zoom'),
   getCustomMessageSettings: () => ipcRenderer.invoke('get-custom-message-settings'),
   saveCustomMessageSettings: (settings) => ipcRenderer.invoke('save-custom-message-settings', settings),
-  getPlatform: () => process.platform
+  getToolToggles: () => ipcRenderer.invoke('get-tool-toggles'),
+  saveToolToggles: (toggles) => ipcRenderer.invoke('save-tool-toggles', toggles),
+  getMeetingId: () => ipcRenderer.invoke('get-meeting-id'),
+  saveMeetingId: (meetingId) => ipcRenderer.invoke('save-meeting-id', meetingId),
+  
+  // Universal settings functions
+  getUniversalSettings: () => ipcRenderer.invoke('get-universal-settings'),
+  saveUniversalSettings: (settings) => ipcRenderer.invoke('save-universal-settings', settings),
+  getUniversalMeetingId: () => ipcRenderer.invoke('get-universal-meeting-id'),
+  saveUniversalMeetingId: (meetingId) => ipcRenderer.invoke('save-universal-meeting-id', meetingId),
+  getMeetingSchedule: () => ipcRenderer.invoke('get-meeting-schedule'),
+  saveMeetingSchedule: (schedule) => ipcRenderer.invoke('save-meeting-schedule', schedule),
+  
+  getPlatform: () => process.platform,
+  
+  // Console redirection
+  onConsoleMessage: (callback) => ipcRenderer.on('console-message', (_, data) => callback(data))
 });

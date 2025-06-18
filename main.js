@@ -2,11 +2,64 @@ const { app, BrowserWindow, ipcMain, shell, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
+// Set app user model ID for Windows (helps with proper app identification)
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.khmtools.app');
+}
+
+// Set app name for better system integration
+app.setName('KHM Tools');
+
 // Import all tools
 const tools = require('./tools');
 
 // Keep a global reference of the window object to prevent it from being garbage collected
 let mainWindow;
+
+// Console redirection functionality
+function setupConsoleRedirection() {
+  // Store original console methods
+  const originalConsole = {
+    log: console.log,
+    error: console.error,
+    warn: console.warn,
+    info: console.info,
+    debug: console.debug
+  };
+
+  // Override console methods to send to renderer
+  function redirectConsole(level, originalMethod) {
+    return function(...args) {
+      // Call original console method for terminal output
+      originalMethod.apply(console, args);
+      
+      // Send to renderer if window exists
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        try {
+          const message = args.map(arg => 
+            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+          ).join(' ');
+          
+          mainWindow.webContents.send('console-message', {
+            level,
+            message,
+            timestamp: new Date().toISOString()
+          });
+        } catch (error) {
+          // Fallback to original if sending fails
+          originalMethod.apply(console, ['[Console redirect error]', error]);
+        }
+      }
+    };
+  }
+
+  // Override all console methods
+  console.log = redirectConsole('log', originalConsole.log);
+  console.error = redirectConsole('error', originalConsole.error);
+  console.warn = redirectConsole('warn', originalConsole.warn);
+  console.info = redirectConsole('info', originalConsole.info);
+  console.debug = redirectConsole('debug', originalConsole.debug);
+}
 
 function createWindow() {
   // Get app settings
@@ -36,6 +89,12 @@ function createWindow() {
 
   // Load the index.html of the app
   mainWindow.loadFile('index.html');
+  
+  // Setup console redirection after window is ready
+  mainWindow.webContents.once('did-finish-load', () => {
+    setupConsoleRedirection();
+    console.log('Console redirection enabled - terminal output will also appear in DevTools');
+  });
 
   // Open DevTools only in development mode
   const isDevelopment = process.env.NODE_ENV === 'development';
@@ -100,6 +159,11 @@ function createWindow() {
 
 // This method will be called when Electron has finished initialization
 app.whenReady().then(() => {
+  // Set proper app user model ID for Windows notifications and taskbar
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.khmtools.app');
+  }
+  
   createWindow();
   
   // Initialize all tools
