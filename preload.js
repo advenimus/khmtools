@@ -60,6 +60,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveCustomMessageSettings: (settings) => ipcRenderer.invoke('save-custom-message-settings', settings),
   getToolToggles: () => ipcRenderer.invoke('get-tool-toggles'),
   saveToolToggles: (toggles) => ipcRenderer.invoke('save-tool-toggles', toggles),
+  shouldShowCustomMessage: () => ipcRenderer.invoke('should-show-custom-message'),
   getMeetingId: () => ipcRenderer.invoke('get-meeting-id'),
   saveMeetingId: (meetingId) => ipcRenderer.invoke('save-meeting-id', meetingId),
   
@@ -74,5 +75,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getPlatform: () => process.platform,
   
   // Console redirection
-  onConsoleMessage: (callback) => ipcRenderer.on('console-message', (_, data) => callback(data))
+  onConsoleMessage: (callback) => ipcRenderer.on('console-message', (_, data) => callback(data)),
+  
+  // Onboarding functions
+  onboardingCheckFirstLaunch: () => ipcRenderer.invoke('onboarding-check-first-launch'),
+  onboardingApplySettings: (settings) => ipcRenderer.invoke('onboarding-apply-settings', settings),
+  onboardingCheckPaths: (settings) => ipcRenderer.invoke('onboarding-check-paths', settings),
+  onboardingBrowsePath: (appName) => ipcRenderer.invoke('onboarding-browse-path', appName),
+  onboardingSavePath: (appName, appPath) => ipcRenderer.invoke('onboarding-save-path', appName, appPath)
 });

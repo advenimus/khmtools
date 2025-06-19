@@ -35,7 +35,26 @@ function getDefaultZoomPath() {
   if (process.platform === 'darwin') {
     return '/Applications/zoom.us.app'; // macOS Zoom app bundle
   } else if (process.platform === 'win32') {
-    return 'C:\\Program Files\\Zoom\\bin\\Zoom.exe';
+    // Check system-wide installation first
+    const systemPath = 'C:\\Program Files\\Zoom\\bin\\Zoom.exe';
+    if (fs.existsSync(systemPath)) {
+      console.log('Found system-wide Zoom installation:', systemPath);
+      return systemPath;
+    }
+    
+    // Check per-user installation in AppData
+    const appDataPath = process.env.APPDATA;
+    if (appDataPath) {
+      const userPath = path.join(appDataPath, 'Zoom', 'bin', 'Zoom.exe');
+      if (fs.existsSync(userPath)) {
+        console.log('Found per-user Zoom installation:', userPath);
+        return userPath;
+      }
+    }
+    
+    // Return system path as default if neither exists
+    console.log('No Zoom installation found, returning default system path');
+    return systemPath;
   }
   return '';
 }

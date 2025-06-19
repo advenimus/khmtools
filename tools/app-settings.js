@@ -32,17 +32,39 @@ function saveAppSettings(settings) {
 // Reset all settings to defaults
 function resetAllSettings() {
   try {
-    // Clear app settings
-    saveAppSettings({ alwaysMaximize: false, defaultTool: 'welcome-screen', runAtLogon: false });
+    const userDataPath = app.getPath('userData');
+    
+    // List of all settings files to delete
+    const settingsFiles = [
+      'app-settings.json',
+      'zoom-config.json',
+      'media-config.json',
+      'universal-settings.json',
+      '.onboarding-complete'
+    ];
+    
+    // Delete all settings files
+    settingsFiles.forEach(file => {
+      const filePath = path.join(userDataPath, file);
+      if (fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+          console.log(`Deleted ${file}`);
+        } catch (error) {
+          console.error(`Error deleting ${file}:`, error);
+        }
+      }
+    });
     
     // Disable auto-launch when resetting
     const { AutoLaunch } = require('./auto-launch');
     AutoLaunch.disable();
     
-    // Add code to reset other tool settings if needed
-    // This could call reset functions from other modules
+    // Reset onboarding status
+    const { resetOnboardingStatus } = require('./onboarding');
+    resetOnboardingStatus();
     
-    return { success: true, message: 'All settings reset successfully' };
+    return { success: true, message: 'All settings reset successfully', requiresRestart: true };
   } catch (error) {
     console.error('Error resetting settings:', error);
     return { success: false, message: 'Failed to reset settings' };

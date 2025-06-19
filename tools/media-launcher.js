@@ -21,12 +21,14 @@ function readMediaConfig() {
     mediaManagerPath: '',
     mediaZoomPath: '',
     customMessageSettings: {
-      enabled: true,
+      enabled: false,
+      displayWhen: 'none', // 'always', 'weekend', 'none'
       title: 'Display Custom Message',
-      message: 'Welcome to the meeting!'
+      message: 'Welcome to the meeting!',
+      displayTime: 5
     },
     toolToggles: {
-      customMessage: true,
+      customMessage: false,
       launchOBS: true,
       launchMediaManager: true,
       launchZoom: true
@@ -64,6 +66,42 @@ function getDefaultMediaManagerPath() {
     return 'C:\\Program Files\\Meeting Media Manager\\Meeting Media Manager.exe';
   }
   return '';
+}
+
+// Check if today is a weekend meeting day
+function isWeekendMeetingDay() {
+  const { readUniversalSettings } = require('./universal-settings');
+  const universalSettings = readUniversalSettings();
+  
+  if (!universalSettings.meetingSchedule || !universalSettings.meetingSchedule.weekend) {
+    return false;
+  }
+  
+  const today = new Date();
+  const todayDay = today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+  const weekendDay = universalSettings.meetingSchedule.weekend.day.toLowerCase();
+  
+  return todayDay === weekendDay;
+}
+
+// Determine if custom message should be shown based on settings
+function shouldShowCustomMessage() {
+  const config = readMediaConfig();
+  const customSettings = config.customMessageSettings;
+  
+  if (!customSettings || customSettings.displayWhen === 'none') {
+    return false;
+  }
+  
+  if (customSettings.displayWhen === 'always') {
+    return true;
+  }
+  
+  if (customSettings.displayWhen === 'weekend') {
+    return isWeekendMeetingDay();
+  }
+  
+  return false;
 }
 
 // Launch OBS function
@@ -410,7 +448,13 @@ function initMediaLauncher(mainWindow) {
   // Handle request to get custom message settings
   ipcMain.handle('get-custom-message-settings', async () => {
     const config = readMediaConfig();
-    return config.customMessageSettings || { enabled: true, title: 'Display Custom Message', message: 'Welcome to the meeting!' };
+    return config.customMessageSettings || { 
+      enabled: false, 
+      displayWhen: 'none',
+      title: 'Display Custom Message', 
+      message: 'Welcome to the meeting!',
+      displayTime: 5
+    };
   });
 
   // Handle request to save custom message settings
@@ -424,7 +468,7 @@ function initMediaLauncher(mainWindow) {
   // Handle request to get tool toggles
   ipcMain.handle('get-tool-toggles', async () => {
     const config = readMediaConfig();
-    return config.toolToggles || { customMessage: true, launchOBS: true, launchMediaManager: true, launchZoom: true };
+    return config.toolToggles || { customMessage: false, launchOBS: true, launchMediaManager: true, launchZoom: true };
   });
 
   // Handle request to save tool toggles
@@ -433,6 +477,11 @@ function initMediaLauncher(mainWindow) {
     config.toolToggles = toggles;
     saveMediaConfig(config);
     return { success: true, message: 'Tool toggles saved successfully' };
+  });
+  
+  // Handle request to check if custom message should be shown
+  ipcMain.handle('should-show-custom-message', async () => {
+    return shouldShowCustomMessage();
   });
 
 }

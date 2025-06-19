@@ -38,7 +38,14 @@ function getDefaultUniversalSettings() {
 // Function to save the universal settings configuration
 function saveUniversalSettings(config) {
   try {
+    console.log('Saving universal settings to:', universalConfigPath);
+    console.log('Config being saved:', JSON.stringify(config, null, 2));
     fs.writeFileSync(universalConfigPath, JSON.stringify(config, null, 2));
+    
+    // Verify the file was written
+    const savedData = fs.readFileSync(universalConfigPath, 'utf8');
+    console.log('Verification - File contents after save:', savedData);
+    
     return true;
   } catch (error) {
     console.error('Error saving universal settings:', error);

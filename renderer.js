@@ -45,13 +45,21 @@ let weekendDay = null;
 let weekendTime = null;
 
 // Media Launcher Settings Elements
-let customMessageEnabled = null;
+let customMessageDisplayWhen = null;
 let toggleOBS = null;
 let toggleMediaManager = null;
 let toggleZoom = null;
 let customMessageTitle = null;
 let customMessageText = null;
 let customMessageTime = null;
+
+// Path browsing elements
+let browseOBSPathBtn = null;
+let browseMediaManagerPathBtn = null;
+let browseZoomPathBtn = null;
+let currentOBSPath = null;
+let currentMediaManagerPath = null;
+let currentZoomPath = null;
 
 // Show the selected tool panel and hide others
 function showToolPanel(panelId) {
@@ -93,14 +101,15 @@ if (mediaLauncherBtn) {
     showToolPanel('media-launcher');
     
     // Use setTimeout to ensure DOM elements are available
-    setTimeout(() => {
+    setTimeout(async () => {
       // Load all settings and update UI when Media Launcher is opened
       if (window.electronAPI) {
         Promise.all([
           window.electronAPI.getCustomMessageSettings(),
           window.electronAPI.getToolToggles(),
-          window.electronAPI.getUniversalMeetingId()
-        ]).then(([customSettings, toggles, meetingId]) => {
+          window.electronAPI.getUniversalMeetingId(),
+          window.electronAPI.shouldShowCustomMessage()
+        ]).then(([customSettings, toggles, meetingId, shouldShowCustomMsg]) => {
           // Update step visibility based on toggles
           const custommsgStepElement = document.getElementById('custommsg-step');
           const obsStepElement = document.getElementById('obs-step');
@@ -108,7 +117,7 @@ if (mediaLauncherBtn) {
           const zoomStepElement = document.getElementById('zoom-step');
           
           if (custommsgStepElement) {
-            custommsgStepElement.style.display = toggles.customMessage ? '' : 'none';
+            custommsgStepElement.style.display = shouldShowCustomMsg ? '' : 'none';
           }
           if (obsStepElement) {
             obsStepElement.style.display = toggles.launchOBS ? '' : 'none';
@@ -121,7 +130,7 @@ if (mediaLauncherBtn) {
           }
           
           // Update the step text to use the title value
-          if (toggles.customMessage && customSettings.title && custommsgStepElement) {
+          if (shouldShowCustomMsg && customSettings.title && custommsgStepElement) {
             const stepTextElement = custommsgStepElement.querySelector('.step-text');
             if (stepTextElement) {
               stepTextElement.textContent = customSettings.title;
@@ -247,6 +256,58 @@ const closeHelpButton = document.getElementById('close-help');
 if (closeHelpButton) {
   closeHelpButton.addEventListener('click', () => {
     helpPopup.classList.add('hidden');
+  });
+}
+
+// Media Launcher Help button functionality
+const mediaLauncherHelpButton = document.getElementById('media-launcher-help-button');
+const mediaLauncherHelpPopup = document.getElementById('media-launcher-help-popup');
+const closeMediaLauncherHelp = document.getElementById('close-media-launcher-help');
+
+if (mediaLauncherHelpButton) {
+  mediaLauncherHelpButton.addEventListener('click', () => {
+    mediaLauncherHelpPopup.classList.remove('hidden');
+  });
+}
+
+if (closeMediaLauncherHelp) {
+  closeMediaLauncherHelp.addEventListener('click', () => {
+    mediaLauncherHelpPopup.classList.add('hidden');
+  });
+}
+
+// Close Media Launcher help popup when clicking outside
+if (mediaLauncherHelpPopup) {
+  mediaLauncherHelpPopup.addEventListener('click', (e) => {
+    if (e.target === mediaLauncherHelpPopup) {
+      mediaLauncherHelpPopup.classList.add('hidden');
+    }
+  });
+}
+
+// Zoom Launcher Help button functionality
+const zoomLauncherHelpButton = document.getElementById('zoom-launcher-help-button');
+const zoomLauncherHelpPopup = document.getElementById('zoom-launcher-help-popup');
+const closeZoomLauncherHelp = document.getElementById('close-zoom-launcher-help');
+
+if (zoomLauncherHelpButton) {
+  zoomLauncherHelpButton.addEventListener('click', () => {
+    zoomLauncherHelpPopup.classList.remove('hidden');
+  });
+}
+
+if (closeZoomLauncherHelp) {
+  closeZoomLauncherHelp.addEventListener('click', () => {
+    zoomLauncherHelpPopup.classList.add('hidden');
+  });
+}
+
+// Close Zoom Launcher help popup when clicking outside
+if (zoomLauncherHelpPopup) {
+  zoomLauncherHelpPopup.addEventListener('click', (e) => {
+    if (e.target === zoomLauncherHelpPopup) {
+      zoomLauncherHelpPopup.classList.add('hidden');
+    }
   });
 }
 
@@ -525,14 +586,14 @@ async function loadUnifiedSettings() {
     const customSettings = await window.electronAPI.getCustomMessageSettings();
     const toggles = await window.electronAPI.getToolToggles();
     
-    if (customMessageEnabled) customMessageEnabled.checked = toggles.customMessage || false;
+    if (customMessageDisplayWhen) customMessageDisplayWhen.value = customSettings.displayWhen || 'none';
     if (toggleOBS) toggleOBS.checked = toggles.launchOBS || false;
     if (toggleMediaManager) toggleMediaManager.checked = toggles.launchMediaManager || false;
     if (toggleZoom) toggleZoom.checked = toggles.launchZoom || false;
     
     if (customMessageTitle) customMessageTitle.value = customSettings.title || '';
     if (customMessageText) customMessageText.value = customSettings.message || '';
-    if (customMessageTime) customMessageTime.value = Math.floor((customSettings.displayTime || 5000) / 1000);
+    if (customMessageTime) customMessageTime.value = customSettings.displayTime || 5;
 
     // Load application paths
     await updatePathDisplaysGlobal();
@@ -578,16 +639,16 @@ async function saveUnifiedSettings() {
     };
     await window.electronAPI.saveMeetingSchedule(scheduleData);
 
-    // Save tool toggles with validation
+    // Save tool toggles with validation (removing customMessage toggle)
     const togglesData = {
-      customMessage: customMessageEnabled.checked,
+      customMessage: false, // Deprecated - using displayWhen instead
       launchOBS: toggleOBS.checked,
       launchMediaManager: toggleMediaManager.checked,
       launchZoom: toggleZoom.checked
     };
 
     // Ensure at least one tool is enabled
-    const hasEnabledTool = Object.values(togglesData).some(enabled => enabled);
+    const hasEnabledTool = togglesData.launchOBS || togglesData.launchMediaManager || togglesData.launchZoom;
     if (!hasEnabledTool) {
       showSettingsStatus('Error: At least one tool must be enabled', 'error');
       return false;
@@ -595,12 +656,13 @@ async function saveUnifiedSettings() {
 
     await window.electronAPI.saveToolToggles(togglesData);
 
-    // Save custom message settings
+    // Save custom message settings with new displayWhen field
     const customSettingsData = {
-      enabled: customMessageEnabled.checked,
+      enabled: customMessageDisplayWhen.value !== 'none', // For backward compatibility
+      displayWhen: customMessageDisplayWhen.value,
       title: customMessageTitle.value,
       message: customMessageText.value,
-      displayTime: parseInt(customMessageTime.value) * 1000
+      displayTime: parseInt(customMessageTime.value)
     };
     await window.electronAPI.saveCustomMessageSettings(customSettingsData);
 
@@ -671,15 +733,18 @@ async function updatePathDisplaysGlobal() {
 }
 
 // Global function to update step visibility in media launcher
-function updateStepVisibilityGlobal() {
+async function updateStepVisibilityGlobal() {
   try {
     const custommsgStepEl = document.getElementById('custommsg-step');
     const obsStepEl = document.getElementById('obs-step');
     const mediaManagerStepEl = document.getElementById('media-manager-step');
     const zoomStepEl = document.getElementById('zoom-step');
     
-    if (custommsgStepEl && customMessageEnabled) {
-      custommsgStepEl.style.display = customMessageEnabled.checked ? '' : 'none';
+    // Check if custom message should be shown
+    const shouldShowCustomMessage = await window.electronAPI.shouldShowCustomMessage();
+    
+    if (custommsgStepEl) {
+      custommsgStepEl.style.display = shouldShowCustomMessage ? '' : 'none';
     }
     if (obsStepEl && toggleOBS) {
       obsStepEl.style.display = toggleOBS.checked ? '' : 'none';
@@ -692,7 +757,7 @@ function updateStepVisibilityGlobal() {
     }
     
     // Update custom message step text
-    if (custommsgStepEl && customMessageEnabled && customMessageEnabled.checked && customMessageTitle && customMessageTitle.value) {
+    if (custommsgStepEl && shouldShowCustomMessage && customMessageTitle && customMessageTitle.value) {
       const stepTextEl = custommsgStepEl.querySelector('.step-text');
       if (stepTextEl) {
         stepTextEl.textContent = customMessageTitle.value;
@@ -744,7 +809,7 @@ if (window.electronAPI) {
   weekendTime = document.getElementById('weekend-time');
   
   // Initialize Media Launcher Settings Elements
-  customMessageEnabled = document.getElementById('toggle-custom-message');
+  customMessageDisplayWhen = document.getElementById('custom-message-display-when');
   toggleOBS = document.getElementById('toggle-obs');
   toggleMediaManager = document.getElementById('toggle-media-manager');
   toggleZoom = document.getElementById('toggle-zoom');
@@ -843,16 +908,16 @@ if (window.electronAPI) {
       try {
         const result = await window.electronAPI.resetAllSettings();
         if (result.success) {
-          // Reload settings to show defaults
-          const appSettings = await window.electronAPI.getAppSettings();
-          alwaysMaximizeCheckbox.checked = appSettings.alwaysMaximize || false;
-          defaultToolSelect.value = appSettings.defaultTool || 'welcome-screen';
-          if (runAtLogonCheckbox) runAtLogonCheckbox.checked = appSettings.runAtLogon || false;
+          showSettingsStatus('All settings have been reset to defaults. Restarting app...', 'success');
           
-          showSettingsStatus('All settings have been reset to defaults', 'success');
+          // Reload the app after a short delay to show the message
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
         }
       } catch (error) {
         console.error('Error resetting settings:', error);
+        showSettingsStatus('Error resetting settings', 'error');
       }
     }
   });
@@ -891,7 +956,7 @@ if (window.electronAPI) {
   const launchStatus = document.getElementById('launch-status');
   const custommsgPopup = document.getElementById('custommsg-popup');
   const custommsgPopupTitle = document.querySelector('.custommsg-popup-content h3');
-  const custommsgPopupMessage = document.querySelector('.custommsg-popup-content p');
+  const custommsgPopupMessage = document.querySelector('.custommsg-popup-content p:first-of-type');
   const custommsgStep = document.getElementById('custommsg-step');
   
   // Media settings elements - Removed, now using unified settings
@@ -937,47 +1002,46 @@ if (window.electronAPI) {
   async function showcustommsgPopup() {
     // Get custom message settings
     const customSettings = await window.electronAPI.getCustomMessageSettings();
-    const displayTime = customSettings.displayTime || 5000;
+    const displayTimeSeconds = customSettings.displayTime || 5;
+    const displayTimeMs = displayTimeSeconds * 1000;
     
-    // Determine if we should use custom message
-    // Only check if the enable custom message option is checked
-    const useCustomMessage = customSettings.enabled;
+    // We're already in this function because shouldShowCustomMessage returned true
+    // So we know we should show the popup
     
-    // If custom message is enabled and has content, show it
-    if (useCustomMessage) {
-      // Set popup content based on settings
-      custommsgPopupTitle.textContent = customSettings.title || 'Custom Message';
-      custommsgPopupMessage.textContent = customSettings.message || '';
-      custommsgStep.querySelector('.step-text').textContent = customSettings.title;
-      
-      return new Promise(resolve => {
-        custommsgPopup.classList.remove('hidden');
-        
-        const progressBar = document.querySelector('.custommsg-popup-progress-bar');
-        progressBar.style.width = '0%';
-        
-        // Animate progress bar
-        setTimeout(() => {
-          progressBar.style.width = '100%';
-        }, 100);
-
-        // Set transition duration to match the display time
-        progressBar.style.transition = `width ${displayTime/1000}s linear`;
-        
-        // Close popup and resolve promise after the specified time
-        setTimeout(() => {
-          custommsgPopup.classList.add('hidden');
-          resolve();
-        }, displayTime);
-      });
-    } else {
-      // If custom message is disabled or empty, skip this step entirely
-      // Hide the custommsg step in the launch sequence
-      custommsgStep.style.display = 'none';
-      
-      // Immediately resolve the promise to continue with the next step
-      return Promise.resolve();
+    // Set popup content based on settings
+    custommsgPopupTitle.textContent = customSettings.title || 'Custom Message';
+    // Convert newlines to <br> tags for proper HTML rendering
+    const messageWithBreaks = (customSettings.message || '').replace(/\n/g, '<br>');
+    custommsgPopupMessage.innerHTML = messageWithBreaks;
+    
+    // Update step text if custommsgStep exists
+    if (custommsgStep) {
+      const stepText = custommsgStep.querySelector('.step-text');
+      if (stepText) {
+        stepText.textContent = customSettings.title || 'Custom Message';
+      }
     }
+    
+    return new Promise(resolve => {
+      custommsgPopup.classList.remove('hidden');
+      
+      const progressBar = document.querySelector('.custommsg-popup-progress-bar');
+      progressBar.style.width = '0%';
+      
+      // Animate progress bar
+      setTimeout(() => {
+        progressBar.style.width = '100%';
+      }, 100);
+
+      // Set transition duration to match the display time
+      progressBar.style.transition = `width ${displayTimeSeconds}s linear`;
+      
+      // Close popup and resolve promise after the specified time
+      setTimeout(() => {
+        custommsgPopup.classList.add('hidden');
+        resolve();
+      }, displayTimeMs);
+    });
   }
   
   // Function to launch OBS
@@ -1097,25 +1161,23 @@ if (window.electronAPI) {
       const settings = await window.electronAPI.getCustomMessageSettings();
       
       // Update UI with settings
-      if (customMessageEnabled) customMessageEnabled.checked = settings.enabled || false;
+      if (customMessageDisplayWhen) customMessageDisplayWhen.value = settings.displayWhen || 'none';
       if (customMessageTitle) customMessageTitle.value = settings.title || '';
       if (customMessageText) customMessageText.value = settings.message || '';
-      if (customMessageTime) customMessageTime.value = Math.floor((settings.displayTime || 5000) / 1000);
+      if (customMessageTime) customMessageTime.value = settings.displayTime || 5;
 
-      // Update the visibility of the custom message step in the launch steps list based only on enabled setting
-      custommsgStep.style.display = settings.enabled ? '' : 'none';
+      // Check if custom message should be shown
+      const shouldShow = await window.electronAPI.shouldShowCustomMessage();
+      
+      // Update the visibility of the custom message step in the launch steps list
+      custommsgStep.style.display = shouldShow ? '' : 'none';
       
       // Update the step text to use the title value
-      if (settings.enabled && settings.title) {
+      if (shouldShow && settings.title) {
         custommsgStep.querySelector('.step-text').textContent = settings.title;
       }
       
-      // Show/hide custom message settings based on enabled state
-      if (settings.enabled) {
-        customMessageSettings.classList.remove('hidden');
-      } else {
-        customMessageSettings.classList.add('hidden');
-      }
+      // Remove old enabled-based visibility logic
     } catch (error) {
       console.error('Error loading custom message settings:', error);
     }
@@ -1127,7 +1189,7 @@ if (window.electronAPI) {
       const toggles = await window.electronAPI.getToolToggles();
       
       // Update UI with toggle settings
-      if (customMessageEnabled) customMessageEnabled.checked = toggles.customMessage || false;
+      // customMessage toggle is deprecated - using displayWhen dropdown instead
       if (toggleOBS) toggleOBS.checked = toggles.launchOBS || false;
       if (toggleMediaManager) toggleMediaManager.checked = toggles.launchMediaManager || false;
       if (toggleZoom) toggleZoom.checked = toggles.launchZoom || false;
@@ -1154,7 +1216,7 @@ if (window.electronAPI) {
     try {
       // Save tool toggles
       const toggles = {
-        customMessage: customMessageEnabled.checked,
+        customMessage: false, // Deprecated - using displayWhen instead
         launchOBS: toggleOBS.checked,
         launchMediaManager: toggleMediaManager.checked,
         launchZoom: toggleZoom.checked
@@ -1175,10 +1237,11 @@ if (window.electronAPI) {
       
       // Save custom message settings
       const customSettings = {
-        enabled: customMessageEnabled ? customMessageEnabled.checked : false,
+        enabled: customMessageDisplayWhen ? customMessageDisplayWhen.value !== 'none' : false,
+        displayWhen: customMessageDisplayWhen ? customMessageDisplayWhen.value : 'none',
         title: customMessageTitle ? customMessageTitle.value : '',
         message: customMessageText ? customMessageText.value : '',
-        displayTime: customMessageTime ? parseInt(customMessageTime.value) * 1000 : 5000
+        displayTime: customMessageTime ? parseInt(customMessageTime.value) : 5
       };
       await window.electronAPI.saveCustomMessageSettings(customSettings);
       
@@ -1196,14 +1259,17 @@ if (window.electronAPI) {
   }
   
   // Function to update step visibility based on toggle settings
-  function updateStepVisibility() {
-    custommsgStep.style.display = customMessageEnabled.checked ? '' : 'none';
+  async function updateStepVisibility() {
+    // Check if custom message should be shown
+    const shouldShowCustomMessage = await window.electronAPI.shouldShowCustomMessage();
+    custommsgStep.style.display = shouldShowCustomMessage ? '' : 'none';
+    
     document.getElementById('obs-step').style.display = toggleOBS.checked ? '' : 'none';
     document.getElementById('media-manager-step').style.display = toggleMediaManager.checked ? '' : 'none';
     document.getElementById('zoom-step').style.display = toggleZoom.checked ? '' : 'none';
     
     // Update custom message step text
-    if (custommsgStep && customMessageEnabled && customMessageEnabled.checked && customMessageTitle && customMessageTitle.value) {
+    if (custommsgStep && shouldShowCustomMessage && customMessageTitle && customMessageTitle.value) {
       custommsgStep.querySelector('.step-text').textContent = customMessageTitle.value;
     }
   }
@@ -1247,8 +1313,9 @@ if (window.electronAPI) {
   // }
 
   // Function to update UI based on current settings
-  function updateCustomMessageUI() {
-    if (customMessageEnabled.checked) {
+  async function updateCustomMessageUI() {
+    const shouldShow = await window.electronAPI.shouldShowCustomMessage();
+    if (shouldShow) {
       custommsgStep.style.display = '';
       if (customMessageTitle.value) {
         custommsgStep.querySelector('.step-text').textContent = customMessageTitle.value;
@@ -1293,9 +1360,9 @@ if (window.electronAPI) {
   //   });
   // }
   
-  // Toggle custom message settings visibility when checkbox is clicked
-  if (customMessageEnabled) {
-    customMessageEnabled.addEventListener('change', () => {
+  // Add event listener for custom message display when dropdown
+  if (customMessageDisplayWhen) {
+    customMessageDisplayWhen.addEventListener('change', () => {
       updateStepVisibility();
     });
   }
@@ -1393,14 +1460,22 @@ if (window.electronAPI) {
         step.classList.remove('completed');
       });
       
+      // Check if custom message should be shown
+      const shouldShowCustomMessage = await window.electronAPI.shouldShowCustomMessage();
+      
       let currentProgress = 20;
-      const progressStep = 80 / Object.values(toggles).filter(enabled => enabled).length;
+      // Count enabled tools (excluding deprecated customMessage)
+      const enabledToolsCount = (toggles.launchOBS ? 1 : 0) + 
+                               (toggles.launchMediaManager ? 1 : 0) + 
+                               (toggles.launchZoom ? 1 : 0) +
+                               (shouldShowCustomMessage ? 1 : 0);
+      const progressStep = enabledToolsCount > 0 ? 80 / enabledToolsCount : 80;
       
       // Launch tools in sequence based on toggles
       let allSuccessful = true;
       
-      // 1. Show custom message if enabled
-      if (toggles.customMessage) {
+      // 1. Show custom message if it should be shown
+      if (shouldShowCustomMessage) {
         updateProgress(currentProgress, `Showing ${customSettings.title}...`);
         await showcustommsgPopup();
         markStepCompleted('custommsg-step');
@@ -1467,3 +1542,414 @@ if (window.electronAPI) {
     console.error('Launch Media button not found!');
   }
 }
+
+// Onboarding Wizard Implementation
+const onboardingWizard = document.getElementById('onboarding-wizard');
+const onboardingBackBtn = document.getElementById('onboarding-back');
+const onboardingNextBtn = document.getElementById('onboarding-next');
+const onboardingSkipBtn = document.getElementById('onboarding-skip');
+const onboardingFinishBtn = document.getElementById('onboarding-finish');
+const onboardingProgressBar = document.querySelector('.onboarding-progress-bar');
+
+let currentOnboardingStep = 1;
+const totalOnboardingSteps = 8;
+let onboardingData = {
+  meetingId: '',
+  midweekDay: 'tuesday',
+  midweekTime: '19:30',
+  weekendDay: 'sunday',
+  weekendTime: '10:00',
+  useMediaManager: false,
+  useOBS: false,
+  pcPurpose: 'other',
+  useReminder: false,
+  reminderWhen: 'weekend',
+  reminderTitle: 'Pre-Meeting Checklist',
+  reminderMessage: 'Remember to:\n• Add speaker\'s opening song and photo\n• Wait for media files to sync\n• Check with AV servant for any special items',
+  autoLaunch: false,
+  missingPaths: []
+};
+
+// Show/hide onboarding steps
+function showOnboardingStep(stepNumber) {
+  // Hide all steps by removing active class
+  document.querySelectorAll('.onboarding-step').forEach(step => {
+    step.classList.remove('active');
+  });
+  
+  // Show current step
+  const currentStepElement = document.getElementById(`onboarding-step-${stepNumber}`);
+  if (currentStepElement) {
+    currentStepElement.classList.add('active');
+  }
+  
+  // Show complete step if we're done
+  if (stepNumber > totalOnboardingSteps) {
+    document.getElementById('onboarding-complete').classList.add('active');
+    onboardingNextBtn.classList.add('hidden');
+    onboardingSkipBtn.classList.add('hidden');
+    onboardingFinishBtn.classList.remove('hidden');
+  }
+  
+  // Update progress bar
+  const progressPercent = (stepNumber / totalOnboardingSteps) * 100;
+  onboardingProgressBar.style.width = `${progressPercent}%`;
+  
+  // Enable/disable back button
+  onboardingBackBtn.disabled = stepNumber <= 1;
+  
+  // Update button text for step 8
+  if (stepNumber === 8 && onboardingData.missingPaths.length > 0) {
+    onboardingNextBtn.textContent = 'Next';
+  } else if (stepNumber === totalOnboardingSteps) {
+    onboardingNextBtn.textContent = 'Complete Setup';
+  } else {
+    onboardingNextBtn.textContent = 'Next';
+  }
+  
+  // Setup reminder settings visibility toggle
+  if (stepNumber === 6) {
+    const useReminderRadios = document.querySelectorAll('input[name="use-reminder"]');
+    const reminderSettings = document.getElementById('reminder-settings');
+    
+    useReminderRadios.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (e.target.value === 'yes') {
+          reminderSettings.style.display = 'block';
+        } else {
+          reminderSettings.style.display = 'none';
+        }
+      });
+    });
+    
+    // Set initial state
+    const checkedRadio = document.querySelector('input[name="use-reminder"]:checked');
+    if (checkedRadio) {
+      reminderSettings.style.display = checkedRadio.value === 'yes' ? 'block' : 'none';
+    }
+  }
+}
+
+// Collect data from current step
+function collectOnboardingData() {
+  switch (currentOnboardingStep) {
+    case 1: // Meeting ID
+      onboardingData.meetingId = document.getElementById('onboarding-meeting-id').value;
+      console.log('Onboarding Step 1 - Meeting ID collected:', onboardingData.meetingId);
+      break;
+    case 2: // Meeting Times
+      onboardingData.midweekDay = document.getElementById('onboarding-midweek-day').value;
+      onboardingData.midweekTime = document.getElementById('onboarding-midweek-time').value;
+      onboardingData.weekendDay = document.getElementById('onboarding-weekend-day').value;
+      onboardingData.weekendTime = document.getElementById('onboarding-weekend-time').value;
+      break;
+    case 3: // Media Manager
+      onboardingData.useMediaManager = document.querySelector('input[name="use-media-manager"]:checked')?.value === 'yes';
+      break;
+    case 4: // OBS
+      onboardingData.useOBS = document.querySelector('input[name="use-obs"]:checked')?.value === 'yes';
+      break;
+    case 5: // PC Purpose
+      onboardingData.pcPurpose = document.getElementById('onboarding-pc-purpose').value;
+      break;
+    case 6: // Reminder settings (only shown for zoom-host)
+      onboardingData.useReminder = document.querySelector('input[name="use-reminder"]:checked')?.value === 'yes';
+      if (onboardingData.useReminder) {
+        onboardingData.reminderWhen = document.getElementById('onboarding-reminder-when').value;
+        onboardingData.reminderTitle = document.getElementById('onboarding-reminder-title').value;
+        onboardingData.reminderMessage = document.getElementById('onboarding-reminder-message').value;
+      }
+      break;
+    case 7: // Auto Launch
+      onboardingData.autoLaunch = document.querySelector('input[name="auto-launch"]:checked')?.value === 'yes';
+      break;
+  }
+}
+
+// Populate step 8 with missing paths
+async function populatePathsStep() {
+  const pathsList = document.getElementById('onboarding-paths-list');
+  pathsList.innerHTML = '';
+  
+  if (onboardingData.missingPaths.length === 0) {
+    pathsList.innerHTML = '<p class="onboarding-success">✓ All applications found!</p>';
+    onboardingNextBtn.textContent = 'Complete Setup';
+  } else {
+    onboardingData.missingPaths.forEach(({ app, defaultPath }) => {
+      const pathItem = document.createElement('div');
+      pathItem.className = 'onboarding-path-item';
+      pathItem.innerHTML = `
+        <div class="path-info">
+          <strong>${app}</strong>
+          <span class="path-status" id="status-${app.replace(/\s+/g, '-')}">Not found at default location</span>
+        </div>
+        <button class="browse-btn" data-app="${app}">Browse</button>
+      `;
+      pathsList.appendChild(pathItem);
+      
+      // Add browse button handler
+      pathItem.querySelector('.browse-btn').addEventListener('click', async (e) => {
+        const appName = e.target.dataset.app;
+        try {
+          const appPath = await window.electronAPI.onboardingBrowsePath(appName);
+          if (appPath) {
+            // Save the path
+            const result = await window.electronAPI.onboardingSavePath(appName, appPath);
+            if (result.success) {
+              // Update UI
+              const statusElement = document.getElementById(`status-${appName.replace(/\s+/g, '-')}`);
+              statusElement.textContent = '✓ Found';
+              statusElement.style.color = 'var(--success-color)';
+              e.target.disabled = true;
+              e.target.textContent = 'Set';
+              
+              // Check if all paths are now set
+              const allSet = Array.from(pathsList.querySelectorAll('.browse-btn')).every(btn => btn.disabled);
+              if (allSet) {
+                onboardingNextBtn.textContent = 'Complete Setup';
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error browsing for path:', error);
+        }
+      });
+    });
+  }
+}
+
+// Handle next button
+onboardingNextBtn.addEventListener('click', async () => {
+  collectOnboardingData();
+  
+  // Handle step transitions
+  if (currentOnboardingStep === 5) {
+    // After PC purpose, skip step 6 if not zoom-host
+    if (onboardingData.pcPurpose !== 'zoom-host') {
+      currentOnboardingStep = 7; // Skip to auto-launch
+    } else {
+      currentOnboardingStep++;
+    }
+  } else if (currentOnboardingStep === 7) {
+    // After auto-launch, check for missing application paths
+    try {
+      onboardingData.missingPaths = await window.electronAPI.onboardingCheckPaths(onboardingData);
+      
+      if (onboardingData.missingPaths.length === 0) {
+        // Skip step 8 if all paths are found, but still need to apply settings
+        currentOnboardingStep = totalOnboardingSteps; // Go to apply settings step
+      } else {
+        // Show step 8 to configure missing paths
+        currentOnboardingStep++;
+        await populatePathsStep();
+      }
+    } catch (error) {
+      console.error('Error checking paths:', error);
+      currentOnboardingStep++;
+    }
+  } else if (currentOnboardingStep === totalOnboardingSteps || currentOnboardingStep === 8) {
+    // Apply settings and complete onboarding
+    try {
+      // Collect data from all previous steps one more time to ensure we have everything
+      console.log('Final step - Collecting all onboarding data...');
+      
+      // Re-collect meeting ID to ensure it's not lost
+      const meetingIdValue = document.getElementById('onboarding-meeting-id').value;
+      if (meetingIdValue) {
+        onboardingData.meetingId = meetingIdValue;
+      }
+      
+      console.log('Onboarding - Sending data to backend:', onboardingData);
+      console.log('Onboarding - Meeting ID being sent:', onboardingData.meetingId);
+      
+      let result;
+      try {
+        console.log('Calling IPC: onboardingApplySettings...');
+        result = await window.electronAPI.onboardingApplySettings(onboardingData);
+        console.log('Onboarding - Apply settings result:', result);
+      } catch (ipcError) {
+        console.error('IPC Error when applying settings:', ipcError);
+        throw ipcError;
+      }
+      
+      if (result && result.success) {
+        currentOnboardingStep = totalOnboardingSteps + 1; // Go to completion step
+      } else {
+        console.error('Error applying settings:', result ? result.error : 'Unknown error');
+        alert('Error applying settings. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error during onboarding completion:', error);
+      alert('Error completing setup. Please try again.');
+    }
+  } else {
+    currentOnboardingStep++;
+  }
+  
+  showOnboardingStep(currentOnboardingStep);
+});
+
+// Handle back button
+onboardingBackBtn.addEventListener('click', () => {
+  if (currentOnboardingStep > 1) {
+    // Handle special cases for going back
+    if (currentOnboardingStep === totalOnboardingSteps + 1 && onboardingData.missingPaths.length === 0) {
+      currentOnboardingStep = 7; // Go back to auto-launch
+    } else if (currentOnboardingStep === 7 && onboardingData.pcPurpose !== 'zoom-host') {
+      currentOnboardingStep = 5; // Skip reminder step when going back
+    } else {
+      currentOnboardingStep--;
+    }
+    showOnboardingStep(currentOnboardingStep);
+  }
+});
+
+// Handle skip button
+onboardingSkipBtn.addEventListener('click', () => {
+  onboardingWizard.classList.add('hidden');
+});
+
+// Handle finish button
+onboardingFinishBtn.addEventListener('click', async () => {
+  onboardingWizard.classList.add('hidden');
+  
+  // Verify settings were saved (add delay to ensure file write completes)
+  setTimeout(async () => {
+    console.log('Onboarding completed - Verifying saved settings...');
+    try {
+      const universalSettings = await window.electronAPI.getUniversalSettings();
+      console.log('Universal settings after onboarding:', universalSettings);
+      console.log('Meeting ID after onboarding:', universalSettings.meetingId);
+      
+      // Reload settings in the UI
+      await loadUnifiedSettings();
+    } catch (error) {
+      console.error('Error verifying settings after onboarding:', error);
+    }
+  }, 1000); // Increased delay to ensure file operations complete
+  
+  // Open the default tool if configured
+  if (onboardingData.pcPurpose === 'zoom-host') {
+    mediaLauncherBtn.click();
+  } else if (onboardingData.pcPurpose === 'zoom-attendant') {
+    startZoomBtn.click();
+  }
+});
+
+// Check if onboarding should be shown on startup
+async function checkOnboarding() {
+  try {
+    console.log('Checking if onboarding should be shown...');
+    const isFirstLaunch = await window.electronAPI.onboardingCheckFirstLaunch();
+    console.log('Is first launch:', isFirstLaunch);
+    if (isFirstLaunch) {
+      onboardingWizard.classList.remove('hidden');
+      showOnboardingStep(1);
+    }
+  } catch (error) {
+    console.error('Error checking first launch:', error);
+  }
+}
+
+// Initialize media launcher elements
+function initMediaLauncherElements() {
+  // Media launcher elements are already initialized in initializeMediaLauncher()
+  if (typeof initializeMediaLauncher === 'function') {
+    initializeMediaLauncher();
+  }
+}
+
+// Load app settings
+async function loadAppSettings() {
+  try {
+    if (window.electronAPI) {
+      const settings = await window.electronAPI.getAppSettings();
+      if (settings) {
+        // Apply settings
+        if (defaultToolSelect) {
+          defaultToolSelect.value = settings.defaultTool || 'welcome-screen';
+        }
+        if (alwaysMaximizeCheckbox) {
+          alwaysMaximizeCheckbox.checked = settings.alwaysMaximize || false;
+        }
+        if (runAtLogonCheckbox) {
+          runAtLogonCheckbox.checked = settings.runAtLogon || false;
+        }
+        
+        // Open default tool if configured
+        if (settings.defaultTool && settings.defaultTool !== 'welcome-screen') {
+          // Wait a bit for everything to initialize
+          setTimeout(() => {
+            const toolButton = document.querySelector(`[id$="${settings.defaultTool.replace('-calculator', '-btn').replace('-', '-btn')}"]`);
+            if (toolButton) {
+              toolButton.click();
+            }
+          }, 100);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error loading app settings:', error);
+  }
+}
+
+// Check for updates
+function checkForUpdates() {
+  // Auto-update functionality is already set up earlier in the code
+  // This function is just a placeholder as the update check happens automatically
+  console.log('Update check initiated');
+}
+
+// Initialize app on DOM load
+document.addEventListener('DOMContentLoaded', async () => {
+  // Initialize all the unified settings elements
+  settingsNavBtns = document.querySelectorAll('.settings-nav-btn');
+  settingsPanels = document.querySelectorAll('.settings-panel');
+  saveUnifiedSettingsBtn = document.getElementById('save-unified-settings');
+  settingsStatus = document.getElementById('settings-status');
+  universalMeetingId = document.getElementById('universal-meeting-id');
+  midweekDay = document.getElementById('midweek-day');
+  midweekTime = document.getElementById('midweek-time');
+  weekendDay = document.getElementById('weekend-day');
+  weekendTime = document.getElementById('weekend-time');
+  
+  // Initialize media launcher settings elements
+  customMessageDisplayWhen = document.getElementById('custom-message-display-when');
+  toggleOBS = document.getElementById('toggle-obs');
+  toggleMediaManager = document.getElementById('toggle-media-manager');
+  toggleZoom = document.getElementById('toggle-zoom');
+  customMessageTitle = document.getElementById('custom-message-title');
+  customMessageText = document.getElementById('custom-message-text');
+  customMessageTime = document.getElementById('custom-message-time');
+  
+  // Initialize browse button elements
+  browseOBSPathBtn = document.getElementById('browse-obs-path-btn');
+  browseMediaManagerPathBtn = document.getElementById('browse-media-manager-path-btn');
+  browseZoomPathBtn = document.getElementById('browse-zoom-path-btn');
+  currentOBSPath = document.getElementById('current-obs-path');
+  currentMediaManagerPath = document.getElementById('current-media-manager-path');
+  currentZoomPath = document.getElementById('current-zoom-path');
+  
+  // Initialize media launcher elements
+  initMediaLauncherElements();
+  
+  // Load app settings
+  loadAppSettings();
+  
+  // Check for updates
+  checkForUpdates();
+  
+  // Set up console redirection listener
+  if (window.electronAPI && window.electronAPI.onConsoleMessage) {
+    window.electronAPI.onConsoleMessage((data) => {
+      if (data.args && Array.isArray(data.args)) {
+        console[data.level](...data.args);
+      } else {
+        console[data.level](data.message || data);
+      }
+    });
+  }
+  
+  // Check if onboarding should be shown
+  await checkOnboarding();
+});

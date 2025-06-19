@@ -9,6 +9,7 @@ const zoomAttendance = require('./zoom-attendance');
 const autoUpdater = require('./auto-updater');
 const universalSettings = require('./universal-settings');
 const autoLaunch = require('./auto-launch');
+const onboarding = require('./onboarding');
 
 /**
  * Initialize all tools
@@ -23,6 +24,7 @@ function initializeAllTools(mainWindow) {
   autoUpdater.initAutoUpdater(mainWindow);
   universalSettings.initUniversalSettings();
   autoLaunch.AutoLaunch.init();
+  onboarding.initOnboarding();
   
   console.log('All tools initialized successfully');
 }
@@ -35,5 +37,6 @@ module.exports = {
   autoUpdater,
   universalSettings,
   autoLaunch,
+  onboarding,
   initializeAllTools
 };
