@@ -1,6 +1,6 @@
 {
   "name": "khmtools",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "A collection of useful tools for Kingdom Hall Media operations",
   "main": "main.js",
   "scripts": {
@@ -47,9 +47,12 @@
     },
     "files": [
       "**/*",
-      "!node_modules",
       "!dist",
-      "!.git"
+      "!.git",
+      "!scripts",
+      "!*.md",
+      "node_modules/electron-updater/**/*",
+      "node_modules/electron-log/**/*"
     ],
     "mac": {
       "category": "public.app-category.utilities",

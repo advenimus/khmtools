@@ -1,8 +1,23 @@
 const { app, ipcMain } = require('electron');
-const { autoUpdater } = require('electron-updater');
+
+// Safely require electron-updater with fallback
+let autoUpdater;
+try {
+  const updater = require('electron-updater');
+  autoUpdater = updater.autoUpdater;
+} catch (error) {
+  console.warn('electron-updater not available:', error.message);
+  autoUpdater = null;
+}
 
 // Initialize auto-updater
 function initAutoUpdater(mainWindow) {
+  // Check if auto-updater is available
+  if (!autoUpdater) {
+    console.warn('Auto-updater not available - skipping initialization');
+    return;
+  }
+
   // Configure auto-updater with enhanced logging
   const log = require('electron-log');
   autoUpdater.logger = log;
@@ -85,12 +100,20 @@ function initAutoUpdater(mainWindow) {
 
   // Install update when requested by renderer
   ipcMain.on('install-update', () => {
+    if (!autoUpdater) {
+      log.warn('Cannot install update - auto-updater not available');
+      return;
+    }
     log.info('Installing update and restarting...');
     autoUpdater.quitAndInstall();
   });
 
   // Manual update check for debugging
   ipcMain.handle('check-for-updates-manually', async () => {
+    if (!autoUpdater) {
+      return { success: false, error: 'Auto-updater not available' };
+    }
+    
     try {
       log.info('Manual update check requested');
       const result = await autoUpdater.checkForUpdatesAndNotify();
