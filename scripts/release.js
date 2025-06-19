@@ -277,6 +277,70 @@ async function buildViaGitHub(version) {
   }
 }
 
+async function getMainAction() {
+  log('\n🎯 Main Action', 'bright');
+  log('What would you like to do?', 'cyan');
+  console.log('  1) Create new release');
+  console.log('  2) Delete existing tag');
+  
+  const choice = await question('\nSelect (1-2): ');
+  return choice === '2' ? 'delete' : 'release';
+}
+
+async function deleteTag() {
+  log('\n🗑️  Delete Tag', 'bright');
+  
+  // Show existing tags
+  try {
+    const tags = execCommand('git tag -l', true);
+    if (tags) {
+      log('\n📋 Existing tags:', 'cyan');
+      tags.split('\n').forEach(tag => {
+        if (tag.trim()) {
+          console.log(`  ${tag}`);
+        }
+      });
+    } else {
+      log('\n⚠️  No tags found in repository', 'yellow');
+    }
+  } catch (error) {
+    log('\n⚠️  Could not fetch tags', 'yellow');
+  }
+  
+  const tagName = await question('\nEnter tag name to delete (e.g., v1.3.3): ');
+  
+  if (!tagName) {
+    log('❌ No tag name provided', 'red');
+    return;
+  }
+  
+  // Confirm deletion
+  const confirm = await question(`\n⚠️  Are you sure you want to delete tag '${tagName}' locally and remotely? (y/N): `);
+  
+  if (confirm.toLowerCase() !== 'y') {
+    log('Aborted.', 'yellow');
+    return;
+  }
+  
+  try {
+    // Delete local tag
+    log(`\n🗑️  Deleting local tag '${tagName}'...`, 'blue');
+    execCommand(`git tag -d ${tagName}`);
+    log(`✅ Local tag '${tagName}' deleted`, 'green');
+    
+    // Delete remote tag
+    log(`\n🗑️  Deleting remote tag '${tagName}'...`, 'blue');
+    execCommand(`git push origin --delete ${tagName}`);
+    log(`✅ Remote tag '${tagName}' deleted`, 'green');
+    
+    log('\n✅ Tag deletion completed successfully!', 'green');
+    
+  } catch (error) {
+    log(`\n❌ Tag deletion failed: ${error.message}`, 'red');
+    throw error;
+  }
+}
+
 async function main() {
   log('🚀 KHM Tools Release Script', 'bright');
   log('==========================\n', 'bright');
@@ -285,6 +349,14 @@ async function main() {
     // Check if we're in the right directory
     if (!fs.existsSync('package.json')) {
       throw new Error('package.json not found. Please run this script from the project root.');
+    }
+    
+    // Get main action
+    const action = await getMainAction();
+    
+    if (action === 'delete') {
+      await deleteTag();
+      return;
     }
     
     // Check git status
