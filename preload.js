@@ -23,6 +23,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (_, info) => callback(info)),
   onUpdateError: (callback) => ipcRenderer.on('update-error', (_, err) => callback(err)),
   installUpdate: () => ipcRenderer.send('install-update'),
+  checkForUpdatesManually: () => ipcRenderer.invoke('check-for-updates-manually'),
   onOpenDefaultTool: (callback) => ipcRenderer.on('open-default-tool', (_, toolId) => callback(toolId)),
   openExternal: (url) => shell.openExternal(url),
   

@@ -359,8 +359,18 @@ if (window.electronAPI) {
   window.electronAPI.onUpdateError((err) => {
     console.error('Update error:', err);
     
+    // Determine error message based on error type
+    let errorMessage = 'Unable to check for updates automatically.';
+    if (err.message && err.message.includes('net::')) {
+      errorMessage = 'Network error checking for updates.';
+    } else if (err.message && err.message.includes('404')) {
+      errorMessage = 'Update server not found.';
+    } else if (err.error && err.error.includes('ENOTFOUND')) {
+      errorMessage = 'Cannot connect to update server.';
+    }
+    
     // Show a notification with a link to the releases page
-    updateMessage.innerHTML = `Unable to download automatic update. <a href="#" id="releases-link" style="color: #fff; text-decoration: underline;">Visit releases page</a>`;
+    updateMessage.innerHTML = `${errorMessage} <a href="#" id="releases-link" style="color: #fff; text-decoration: underline;">Visit releases page</a>`;
     updateButton.style.display = 'none';
     updateNotification.classList.remove('hidden');
     
@@ -375,7 +385,6 @@ if (window.electronAPI) {
         });
       }
     }, 100);
-    // You could also show this to the user if desired
     
     // Make sure the dismiss button works
     if (dismissUpdateButton) {

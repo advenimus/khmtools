@@ -58,7 +58,7 @@ async function getVersionIncrement() {
   }
 }
 
-async function updateVersion(incrementType) {
+function calculateNewVersion(incrementType) {
   const packagePath = path.join(process.cwd(), 'package.json');
   const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
   const currentVersion = packageJson.version;
@@ -83,14 +83,23 @@ async function updateVersion(incrementType) {
   }
   
   const newVersion = `${major}.${minor}.${patch}`;
+  
+  log(`\n📋 Version will be updated: ${currentVersion} → ${newVersion}`, 'yellow');
+  
+  return { currentVersion, newVersion };
+}
+
+function writeVersionToPackage(newVersion) {
+  const packagePath = path.join(process.cwd(), 'package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+  const currentVersion = packageJson.version;
+  
   packageJson.version = newVersion;
   
   // Write updated package.json
   fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n');
   
   log(`\n✅ Version updated: ${currentVersion} → ${newVersion}`, 'green');
-  
-  return newVersion;
 }
 
 async function getBuildMethod() {
@@ -103,7 +112,7 @@ async function getBuildMethod() {
   return choice === '1' ? 'local' : 'github';
 }
 
-async function buildLocally() {
+async function buildLocally(newVersion) {
   log('\n🏗️  Local Build', 'bright');
   log('Which platform(s) to build for?', 'cyan');
   console.log('  1) macOS only');
@@ -111,6 +120,10 @@ async function buildLocally() {
   console.log('  3) All platforms');
   
   const choice = await question('\nSelect (1-3): ');
+  
+  // Write version to package.json before building
+  log('\n📝 Updating package.json version...', 'blue');
+  writeVersionToPackage(newVersion);
   
   log('\n🚀 Starting build...', 'yellow');
   
@@ -143,20 +156,57 @@ async function buildLocally() {
 
 async function getReleaseNotes() {
   log('\n📝 Release Notes', 'bright');
-  log('Enter release notes (Markdown supported, including emojis)', 'cyan');
-  log('Type each line and press Enter. When done, type "DONE" on a new line:', 'yellow');
+  log('Choose input method:', 'cyan');
+  console.log('  1) Paste multi-line text (recommended)');
+  console.log('  2) Enter line by line manually');
   
-  const lines = [];
+  const choice = await question('\nSelect (1-2): ');
   
-  while (true) {
-    const line = await question('');
-    if (line.toUpperCase() === 'DONE') {
-      break;
+  if (choice === '2') {
+    log('\nManual entry mode - type each line and press Enter. When done, type "DONE" on a new line:', 'yellow');
+    const lines = [];
+    
+    while (true) {
+      const line = await question('');
+      if (line.toUpperCase() === 'DONE') {
+        break;
+      }
+      lines.push(line);
     }
-    lines.push(line);
+    
+    return lines.join('\n');
   }
   
-  return lines.join('\n');
+  // Paste mode - temporarily close readline and use raw stdin
+  log('\n📋 Paste Mode Active', 'yellow');
+  log('Paste your release notes below and press Ctrl+D when finished:', 'cyan');
+  log('(The text will appear as you paste it)\n', 'yellow');
+  
+  // Close readline temporarily
+  rl.pause();
+  
+  return new Promise((resolve) => {
+    const chunks = [];
+    
+    process.stdin.resume();
+    process.stdin.setEncoding('utf8');
+    
+    process.stdin.on('data', (chunk) => {
+      chunks.push(chunk);
+    });
+    
+    process.stdin.on('end', () => {
+      const fullInput = chunks.join('').trim();
+      
+      // Resume readline for future questions
+      process.stdin.removeAllListeners('data');
+      process.stdin.removeAllListeners('end');
+      rl.resume();
+      
+      log('\n✅ Release notes captured!', 'green');
+      resolve(fullInput);
+    });
+  });
 }
 
 async function buildViaGitHub(version) {
@@ -166,7 +216,11 @@ async function buildViaGitHub(version) {
   log('\n🚀 Preparing GitHub release...', 'yellow');
   
   try {
-    // Check for uncommitted changes
+    // Write version to package.json before committing
+    log('📝 Updating package.json version...', 'blue');
+    writeVersionToPackage(version);
+    
+    // Check for uncommitted changes (including the version update)
     const status = execCommand('git status --porcelain', true);
     if (status) {
       log('Uncommitted changes detected. Committing...', 'blue');
@@ -247,14 +301,14 @@ async function main() {
     // Get version increment type
     const incrementType = await getVersionIncrement();
     
-    // Update version
-    const newVersion = await updateVersion(incrementType);
+    // Calculate new version (but don't write it yet)
+    const { currentVersion, newVersion } = calculateNewVersion(incrementType);
     
     // Get build method
     const buildMethod = await getBuildMethod();
     
     if (buildMethod === 'local') {
-      await buildLocally();
+      await buildLocally(newVersion);
       log('\n✅ Done! Check the dist/ directory for build artifacts.', 'green');
     } else {
       await buildViaGitHub(newVersion);

@@ -78,10 +78,10 @@ header {
 
 /* Update Notification Banner */
 .update-notification {
-  position: absolute;
-  top: -60px;
-  left: 0;
-  right: 0;
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
   background: var(--gradient-primary);
   border-radius: 8px;
   padding: 1rem 1.5rem;
@@ -89,7 +89,9 @@ header {
   align-items: center;
   justify-content: space-between;
   box-shadow: var(--shadow-lg);
-  animation: slideDown 0.3s ease-out;
+  animation: slideUp 0.3s ease-out;
+  z-index: 1000;
+  max-width: calc(100vw - 40px);
 }
 
 .update-notification span,
@@ -97,8 +99,8 @@ header {
   color: white;
 }
 
-@keyframes slideDown {
-  from { transform: translateY(-100%); opacity: 0; }
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
