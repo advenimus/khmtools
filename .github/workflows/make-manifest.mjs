@@ -47,25 +47,14 @@ function readSig(file) {
 
 const platforms = {};
 
-// macOS aarch64 (.app.tar.gz from arm64 build)
-const macAarch = findArtifact(
-  (f) => f.endsWith(".app.tar.gz") && (f.includes("aarch64") || f.includes("arm64"))
-);
+// macOS aarch64 — only Apple Silicon is built (Intel was dropped in v2.0.0).
+// Tauri names the artifact "KHM Tools.app.tar.gz" with no arch suffix; the
+// staging step normalizes spaces to dots to match GitHub's release-asset name.
+const macAarch = findArtifact((f) => f.endsWith(".app.tar.gz"));
 if (macAarch) {
   platforms["darwin-aarch64"] = {
     signature: readSig(macAarch),
-    url: `${baseUrl}/${macAarch}`,
-  };
-}
-
-// macOS x86_64 (.app.tar.gz from x64 build)
-const macX64 = findArtifact(
-  (f) => f.endsWith(".app.tar.gz") && (f.includes("x64") || f.includes("x86_64"))
-);
-if (macX64) {
-  platforms["darwin-x86_64"] = {
-    signature: readSig(macX64),
-    url: `${baseUrl}/${macX64}`,
+    url: `${baseUrl}/${encodeURIComponent(macAarch)}`,
   };
 }
 
@@ -74,7 +63,7 @@ const winSetup = findArtifact((f) => f.endsWith("-setup.nsis.zip"));
 if (winSetup) {
   platforms["windows-x86_64"] = {
     signature: readSig(winSetup),
-    url: `${baseUrl}/${winSetup}`,
+    url: `${baseUrl}/${encodeURIComponent(winSetup)}`,
   };
 }
 
@@ -83,7 +72,7 @@ const appImage = findArtifact((f) => f.endsWith(".AppImage.tar.gz"));
 if (appImage) {
   platforms["linux-x86_64"] = {
     signature: readSig(appImage),
-    url: `${baseUrl}/${appImage}`,
+    url: `${baseUrl}/${encodeURIComponent(appImage)}`,
   };
 }
 
