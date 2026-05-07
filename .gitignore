@@ -1,22 +1,24 @@
 # Build output
 dist/
+src-tauri/target/
+src-tauri/gen/schemas/
 
 # Dependencies
 node_modules/
-node_modules/electron/
 
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 
-# OS specific files
+# OS files
 .DS_Store
 Thumbs.db
 
-# Editor directories and files
+# Editor
 .idea/
 .vscode/
+*.swp
 
 # Claude
 .claude/

@@ -1,0 +1,175 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'        # stable, e.g. v2.0.0
+      - 'v[0-9]+.[0-9]+.[0-9]+-beta.*' # beta,   e.g. v2.0.0-beta.1
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            args: '--target aarch64-apple-darwin'
+          - os: macos-13
+            target: x86_64-apple-darwin
+            args: '--target x86_64-apple-darwin'
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            args: ''
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            args: ''
+    runs-on: ${{ matrix.os }}
+    outputs:
+      tag: ${{ steps.detect.outputs.tag }}
+      channel: ${{ steps.detect.outputs.channel }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect channel
+        id: detect
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          if [[ "$TAG" == *"-beta"* ]]; then
+            echo "channel=beta" >> "$GITHUB_OUTPUT"
+          else
+            echo "channel=stable" >> "$GITHUB_OUTPUT"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install Linux deps
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev
+
+      - name: Install JS deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build & sign
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: pnpm tauri build ${{ matrix.args }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.target }}
+          path: |
+            src-tauri/target/${{ matrix.target }}/release/bundle/**/*
+            src-tauri/target/release/bundle/**/*
+
+  publish:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Stage release files
+        shell: bash
+        run: |
+          mkdir -p release
+          # Find all bundle artifacts and the .sig + tar/zip needed for the updater
+          find dist -type f \( \
+            -name '*.dmg' -o \
+            -name '*.app.tar.gz' -o -name '*.app.tar.gz.sig' -o \
+            -name '*.exe' -o \
+            -name '*-setup.nsis.zip' -o -name '*-setup.nsis.zip.sig' -o \
+            -name '*.AppImage' -o -name '*.AppImage.tar.gz' -o -name '*.AppImage.tar.gz.sig' -o \
+            -name '*.deb' \) -print -exec cp {} release/ \;
+          ls -la release/
+
+      - name: Build latest.json
+        env:
+          TAG: ${{ needs.build.outputs.tag }}
+          CHANNEL: ${{ needs.build.outputs.channel }}
+        run: |
+          node .github/workflows/make-manifest.mjs \
+            --version "${TAG#v}" \
+            --tag "$TAG" \
+            --channel "$CHANNEL" \
+            --release-dir release \
+            --out release
+
+      - name: Create / update release (stable)
+        if: needs.build.outputs.channel == 'stable'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" release/* --clobber
+          else
+            gh release create "$TAG" release/* \
+              --title "$TAG" \
+              --generate-notes \
+              --latest
+          fi
+
+      - name: Create / update release (beta) and move beta tag
+        if: needs.build.outputs.channel == 'beta'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          # 1. Specific versioned beta release
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" release/* --clobber
+          else
+            gh release create "$TAG" release/* \
+              --title "$TAG" \
+              --generate-notes \
+              --prerelease
+          fi
+          # 2. Moving "beta" release for the updater endpoint
+          if gh release view beta >/dev/null 2>&1; then
+            gh release delete beta --cleanup-tag --yes
+          fi
+          gh release create beta release/* \
+            --title "Latest beta ($TAG)" \
+            --notes "Floating release pointing to the latest beta build. Source: $TAG" \
+            --prerelease
