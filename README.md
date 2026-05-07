@@ -1,96 +1,50 @@
-# KHM Tools (Rust edition)
+# KHM Tools
 
-Cross-platform desktop app for Kingdom Hall AV operators. Tauri 2 + Svelte 5 + Rust.
+A free desktop tool for Kingdom Hall AV operators and Zoom attendants. One click to launch your programs, a clean attendance calculator, and a guided setup — so you can focus on the meeting, not the tech.
+
+![KHM Tools Demo](docs/demo.gif)
+
+---
 
 ## What it does
 
-- **Start Meeting** — launches OBS, Meeting Media Manager and Zoom in sequence
-- **Launch Zoom** — opens Zoom and joins your configured meeting
-- **Attendance Calculator** — totals Zoom poll responses
-- **Settings** — meetings, application paths, theme, update channel
-- **Onboarding** — 7-step first-run wizard
-- **Auto-update** — stable + beta channels via GitHub Releases
+### Start a Meeting
+Launches [OBS Studio](https://obsproject.com), [Meeting Media Manager (M³)](#works-alongside), and [Zoom](https://zoom.us) in the correct sequence with a single click — no more scrambling at program time.
 
-## Develop
+### Zoom Launcher
+Opens Zoom and joins your configured meeting directly. Handy for Zoom attendant computers that only need that one step.
 
-One-time setup:
+### Attendance Calculator
+Paste your Zoom poll responses and get a clean combined count in seconds — no spreadsheet needed.
 
-```bash
-pnpm install
-```
+### Guided Setup (Onboarding)
+A 7-step wizard walks first-time users through connecting their meeting schedule, Zoom meeting ID, and application paths. Anyone on the AV desk can complete it.
 
-Run in dev (Vite hot reload + Tauri shell):
+### Auto-Update
+The app keeps itself current. Pick between stable and beta update channels in Settings — updates install in the background.
 
-```bash
-pnpm tauri dev
-```
+---
 
-Run only the Vite dev server in a regular browser (UI without Tauri APIs — invoke calls will fail, but useful for pure-style work):
+## Download
 
-```bash
-pnpm dev
-```
+Go to the **[Releases page](https://github.com/advenimus/khmtools/releases/latest)** to download the latest version for macOS, Windows, or Linux.
 
-## Test
+> **macOS note:** If macOS blocks the app on first launch, right-click → Open. The app is signed and notarized with Apple.
 
-```bash
-cargo test --manifest-path src-tauri/Cargo.toml   # 12 Rust unit tests
-pnpm check                                        # svelte-check type pass
-cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
-cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
-```
+---
 
-CI runs all four on every push.
+## Works alongside
 
-## Build
+KHM Tools is designed to complement:
 
-```bash
-pnpm tauri build        # produces a .dmg / .nsis / .AppImage in src-tauri/target/release/bundle
-```
+| Tool | Purpose |
+|------|---------|
+| [Meeting Media Manager (M³)](https://github.com/sircharlo/meeting-media-manager) | Download and display congregation meeting media |
+| [OBS Studio](https://obsproject.com) | Scene switching and in-hall display |
+| [Zoom](https://zoom.us) | Video conferencing for remote attendees |
 
-To produce updater payloads (`.app.tar.gz` + `.sig`) you must export the signing env vars first:
+---
 
-```bash
-export TAURI_SIGNING_PRIVATE_KEY="$(cat ~/.tauri/khmtools.key)"
-export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="khmtools-dev"
-pnpm tauri build --bundles app,updater
-```
+## Contributing
 
-On macOS 26 the bundled DMG script fails — workaround in `HANDOFF.md`.
-
-## Release
-
-Push a git tag:
-- `v2.0.0` → stable channel
-- `v2.0.0-beta.1` → beta channel
-
-The `release.yml` workflow builds for macOS (arm64 + x64), Windows (x64) and Linux (x64), uploads bundles to a GitHub Release, and writes a Tauri updater manifest.
-
-### Required secrets
-- `TAURI_SIGNING_PRIVATE_KEY` — contents of `~/.tauri/khmtools.key`
-- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` — the password set when generating it
-
-## Architecture
-
-```
-src/                     Svelte 5 frontend
-  routes/                Dashboard, Attendance, ZoomLauncher, MediaLauncher, Settings, Onboarding
-  lib/
-    api.ts               typed wrapper around invoke()
-    stores/              theme, toasts
-    components/          Button, Card, Modal, Sidebar, ...
-src-tauri/src/           Rust backend
-  domain/                pure logic (attendance math, settings types, weekday parsing)
-  platform/{macos,windows,linux}.rs   default-path detection + launch helpers
-  commands/              Tauri command handlers (calculate_attendance, launch_*, settings, etc.)
-  storage.rs             atomic JSON load/save into dirs::config_dir()/com.khmtools.app/
-  updater.rs             channel resolution
-```
-
-Storage layout (in `~/Library/Application Support/com.khmtools.app/` on macOS):
-- `app.json` — theme, default tool, update channel, run-at-logon, etc.
-- `meeting.json` — meeting ID + midweek/weekend schedule
-- `paths.json` — Zoom / OBS / Media Manager overrides
-- `media_launcher.json` — launch toggles + custom message
-- `.onboarding_done` — marker file
-- `logs/khmtools.log.*` — daily-rolling tracing logs
+Want to build from source, run tests, or submit a fix? See [CONTRIBUTING.md](CONTRIBUTING.md).
