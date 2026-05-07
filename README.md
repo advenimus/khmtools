@@ -13,17 +13,50 @@ Cross-platform desktop app for Kingdom Hall AV operators. Tauri 2 + Svelte 5 + R
 
 ## Develop
 
+One-time setup:
+
 ```bash
 pnpm install
-pnpm tauri dev          # runs the app with hot reload
-cargo test --manifest-path src-tauri/Cargo.toml
 ```
+
+Run in dev (Vite hot reload + Tauri shell):
+
+```bash
+pnpm tauri dev
+```
+
+Run only the Vite dev server in a regular browser (UI without Tauri APIs — invoke calls will fail, but useful for pure-style work):
+
+```bash
+pnpm dev
+```
+
+## Test
+
+```bash
+cargo test --manifest-path src-tauri/Cargo.toml   # 12 Rust unit tests
+pnpm check                                        # svelte-check type pass
+cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
+```
+
+CI runs all four on every push.
 
 ## Build
 
 ```bash
 pnpm tauri build        # produces a .dmg / .nsis / .AppImage in src-tauri/target/release/bundle
 ```
+
+To produce updater payloads (`.app.tar.gz` + `.sig`) you must export the signing env vars first:
+
+```bash
+export TAURI_SIGNING_PRIVATE_KEY="$(cat ~/.tauri/khmtools.key)"
+export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="khmtools-dev"
+pnpm tauri build --bundles app,updater
+```
+
+On macOS 26 the bundled DMG script fails — workaround in `HANDOFF.md`.
 
 ## Release
 
