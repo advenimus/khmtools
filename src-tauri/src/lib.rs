@@ -1,4 +1,5 @@
 pub mod commands;
+pub mod dock_icon;
 pub mod domain;
 pub mod error;
 pub mod platform;
@@ -75,6 +76,7 @@ pub fn run() {
         ])
         .setup(|app| {
             tracing::info!("KHM Tools v{} starting", app.package_info().version);
+            dock_icon::apply();
             if let Some(window) = app.get_webview_window("main") {
                 let app_settings: domain::settings::AppSettings =
                     storage::load_or_default(domain::settings::files::APP);
