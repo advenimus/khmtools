@@ -1,6 +1,6 @@
 [package]
 name = "khmtools"
-version = "2.0.0"
+version = "2.0.1"
 description = "Kingdom Hall Media tools — Rust edition"
 authors = ["KHM Tools Team"]
 edition = "2021"
