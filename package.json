@@ -1,7 +1,7 @@
 {
   "name": "khmtools",
-  "version": "1.3.3",
-  "description": "A collection of useful tools for Kingdom Hall Media operations",
+  "version": "1.4.0",
+  "description": "Migration notice for the legacy Electron build of KHM Tools (replaced by the new Tauri/Rust build)",
   "main": "main.js",
   "scripts": {
     "start": "cross-env NODE_ENV=production electron .",
@@ -24,10 +24,7 @@
     "type": "git",
     "url": "https://github.com/advenimus/khmtools.git"
   },
-  "dependencies": {
-    "electron-log": "^5.3.2",
-    "electron-updater": "^6.3.9"
-  },
+  "dependencies": {},
   "devDependencies": {
     "cross-env": "^7.0.3",
     "electron": "^35.0.1",
@@ -46,13 +43,11 @@
       "repo": "khmtools"
     },
     "files": [
-      "**/*",
-      "!dist",
-      "!.git",
-      "!scripts",
-      "!*.md",
-      "node_modules/electron-updater/**/*",
-      "node_modules/electron-log/**/*"
+      "main.js",
+      "preload.js",
+      "index.html",
+      "assets/**/*",
+      "package.json"
     ],
     "mac": {
       "category": "public.app-category.utilities",

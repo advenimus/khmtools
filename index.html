@@ -1,773 +1,152 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KHM Tools</title>
-  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
-  <link rel="stylesheet" href="styles.css">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';">
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(160deg, #0f172a 0%, #1e293b 60%, #1e3a8a 100%);
+      color: #f1f5f9;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 16px;
+      padding: 40px 36px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(8px);
+      text-align: center;
+    }
+    .logo {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 20px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.45);
+    }
+    .logo svg { width: 36px; height: 36px; color: #fff; }
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      margin: 0 0 12px;
+      letter-spacing: -0.01em;
+    }
+    .lede {
+      font-size: 15px;
+      line-height: 1.55;
+      color: #cbd5e1;
+      margin: 0 0 8px;
+    }
+    .body {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #94a3b8;
+      margin: 0 0 28px;
+    }
+    .body strong { color: #e2e8f0; font-weight: 600; }
+    button {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 10px;
+      background: #2563eb;
+      color: #fff;
+      transition: transform 0.08s ease, background 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35);
+    }
+    button:hover { background: #1d4ed8; }
+    button:active { transform: translateY(1px); }
+    button:focus-visible { outline: 2px solid #93c5fd; outline-offset: 3px; }
+    .status {
+      margin-top: 18px;
+      font-size: 13px;
+      color: #94a3b8;
+      min-height: 1.2em;
+    }
+    .status.ok { color: #86efac; }
+    .status.err { color: #fca5a5; }
+    .url {
+      margin-top: 22px;
+      padding: 10px 12px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      color: #cbd5e1;
+      word-break: break-all;
+      user-select: text;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <!-- Update Notification Banner (hidden by default) -->
-      <div id="update-notification" class="update-notification hidden">
-        <span id="update-message">An update is available!</span>
-        <button id="update-button" class="update-button">Install Update</button>
-        <button id="dismiss-update" class="dismiss-button">×</button>
-      </div>
-      <div class="logo-container">
-        <!-- Clickable SVG Logo that links to GitHub repository -->
-        <a href="#" id="logo-link" title="Visit GitHub Repository">
-          <img src="assets/logo.svg" alt="KHM Tools Logo" class="logo">
-        </a>
-      </div>
-      <div class="title-container">
-        <h1>KHM Tools</h1>
-        <p>A collection of useful tools for Kingdom Hall Media (KHM) assignments.</p>
-      </div>
-      <div class="app-settings-container">
-        <button id="app-settings-btn" class="app-settings-button" aria-label="Application Settings">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-        </button>
-      </div>
-    </header>
-    
-    <div class="tools-container">
-      <div class="tools-list">
-        <h2>Available Tools</h2>
-        <ul>
-          <li>
-            <button id="zoom-attendance-btn" class="tool-button">
-              <span class="tool-name">Zoom Attendance Calculator</span>
-              <p class="tool-description">Calculate total attendance from Zoom poll results</p>
-            </button>
-          </li>
-          <li>
-            <button id="start-zoom-btn" class="tool-button">
-              <span class="tool-name">Start Zoom</span>
-              <p class="tool-description">Launch Zoom application</p>
-            </button>
-          </li>
-          <li>
-            <button id="media-launcher-btn" class="tool-button">
-              <span class="tool-name">Media Launcher</span>
-              <p class="tool-description">Launch all media presentation tools for hosting</p>
-            </button>
-          </li>
-          <!-- Additional tools will be added here -->
-        </ul>
-      </div>
-      
-      <div id="tool-content" class="tool-content">
-        <!-- Tool content will be loaded here -->
-        <div id="welcome-screen" class="welcome-screen">
-          <h2>Welcome to KHM Tools</h2>
-          <p>This program is collection of useful tools for Kingdom Hall Media (KHM) assignments that will make each role easier. Each included tool has a help button which explains its use in more detail. Click the settings icon at the top left for application settings.</p>
-        </div>
-        
-        <!-- Zoom Attendance Calculator Tool -->
-        <div id="zoom-attendance-calculator" class="tool-panel hidden">
-          <div class="tool-header">
-            <h2>Zoom Attendance Calculator</h2>
-            <button id="help-button" class="help-button" aria-label="Help">?</button>
-          </div>
-          <div id="help-popup" class="help-popup hidden">
-            <p>To use this calculator: <br>1. Set up a poll in Zoom with options labeled as "1", "2", "3", etc. (representing the number of people watching).<br>2. After the meeting, enter the number of responses for each poll option.<br>3. Enter the number of phone connections (each counted as 1 person).<br>4. Click "Calculate" to get the total attendance.</p>
-            <button id="close-help" class="close-help">×</button>
-          </div>
-          <p class="tool-instructions">Enter the number of responses for each poll option, then scroll down and hit calculate:</p>
-          
-          <form id="attendance-form">
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="option1">1 person:</label>
-                <input type="number" id="option1" min="0" value="0" class="number-input">
-              </div>
-              <div class="form-group">
-                <label for="option2">2 people:</label>
-                <input type="number" id="option2" min="0" value="0" class="number-input">
-              </div>
-              <div class="form-group">
-                <label for="option3">3 people:</label>
-                <input type="number" id="option3" min="0" value="0" class="number-input">
-              </div>
-              <div class="form-group">
-                <label for="option4">4 people:</label>
-                <input type="number" id="option4" min="0" value="0" class="number-input">
-              </div>
-              <div class="form-group">
-                <label for="option5">5 people:</label>
-                <input type="number" id="option5" min="0" value="0" class="number-input">
-              </div>
-              <div class="form-group">
-                <label for="option6">6 people:</label>
-                <input type="number" id="option6" min="0" value="0" class="number-input">
-              </div>
-              <div class="form-group">
-                <label for="option7">7 people:</label>
-                <input type="number" id="option7" min="0" value="0" class="number-input">
-              </div>
-              <div class="form-group">
-                <label for="option8">8 people:</label>
-                <input type="number" id="option8" min="0" value="0" class="number-input">
-              </div>
-              <div class="form-group">
-                <label for="option9">9 people:</label>
-                <input type="number" id="option9" min="0" value="0" class="number-input">
-              </div>
-              <div class="form-group">
-                <label for="option10">10 people:</label>
-                <input type="number" id="option10" min="0" value="0" class="number-input">
-              </div>
-              <div class="form-group">
-                <label for="optionPhone">Phone connections:</label>
-                <input type="number" id="optionPhone" min="0" value="0" class="number-input">
-              </div>
-            </div>
-
-            <div class="calculate-container">
-              <button type="submit" class="calculate-btn">Calculate</button>
-              <br>
-              <p class="hint-text">You can also press Enter to calculate</p>
-            </div>
-          </form>         
-        </div>
-        
-        <!-- Result View -->
-        <div id="result-view" class="result-view hidden">
-          <div class="result-container">
-            <h2>Total Attendance</h2>
-            <div id="attendance-result" class="attendance-result">0</div>
-          </div>
-          <button id="back-button" class="back-button">← Back to Calculator</button>
-          <button id="calculate-again-button" class="calculate-again-btn">Calculate Again</button>
-        </div>
-        
-        <!-- Start Zoom Tool -->
-        <div id="start-zoom" class="tool-panel hidden">
-          <div class="tool-header">
-            <h2>Start Zoom</h2>
-            <button id="zoom-launcher-help-button" class="help-button" aria-label="Help">?</button>
-          </div>
-          <div class="zoom-content">
-            <p class="tool-instructions">Click the button below to launch Zoom with your configured meeting:</p>
-            <button id="launch-zoom-btn" class="launch-zoom-btn">Launch Zoom</button>
-            <p id="zoom-status" class="zoom-status"></p>
-            <p class="settings-hint">Configure meeting ID and Zoom path in Settings (⚙️ button at top right)</p>
-          </div>
-        </div>
-        
-        <!-- Zoom Launcher Help Popup -->
-        <div id="zoom-launcher-help-popup" class="unified-settings-popup hidden">
-          <div class="unified-settings-content" style="max-width: 700px; height: 80vh; display: flex; flex-direction: column;">
-            <div class="unified-settings-header">
-              <h2>Start Zoom Tool Help</h2>
-              <button id="close-zoom-launcher-help" class="close-app-settings">×</button>
-            </div>
-            
-            <div class="unified-settings-body" style="flex: 1; overflow-y: auto; padding: 0;">
-              <div class="help-content" style="padding: 30px; line-height: 1.6;">
-                <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Purpose</h3>
-                <p style="margin-bottom: 25px; color: #666;">This tool allows you to quickly launch Zoom meetings with one click. It can automatically join your congregation's recurring meeting using the configured Meeting ID.</p>
-                
-                <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">How It Works</h3>
-                <ol style="margin-bottom: 25px; padding-left: 25px;">
-                  <li style="margin-bottom: 8px;">Click the "Launch Zoom" button to start Zoom</li>
-                  <li style="margin-bottom: 8px;">If a Meeting ID is configured, Zoom will automatically join that meeting</li>
-                  <li style="margin-bottom: 8px;">If you're the host and signed in to Zoom, the meeting will start automatically</li>
-                  <li style="margin-bottom: 8px;">If no Meeting ID is set, Zoom will just open normally</li>
-                </ol>
-                
-                <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">Requirements</h3>
-                <ul style="margin-bottom: 25px; padding-left: 25px;">
-                  <li style="margin-bottom: 8px;"><strong>Zoom Desktop Client:</strong> Must be installed on your computer</li>
-                  <li style="margin-bottom: 8px;"><strong>Meeting ID:</strong> Configure in Settings (⚙️) under Meeting Settings</li>
-                  <li style="margin-bottom: 8px;"><strong>Host Auto-Start:</strong> You must be signed in to Zoom with host privileges</li>
-                </ul>
-                
-                <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">Settings</h3>
-                <p style="margin-bottom: 10px; color: #666;">Configure these in the main Settings (⚙️ button):</p>
-                <ul style="margin-bottom: 25px; padding-left: 25px;">
-                  <li style="margin-bottom: 8px;"><strong>Meeting ID:</strong> Your congregation's recurring Zoom meeting ID</li>
-                  <li style="margin-bottom: 8px;"><strong>Zoom Application:</strong> Path to Zoom if not found automatically</li>
-                </ul>
-                
-                <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">Important Notes</h3>
-                <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border: 1px solid #ffeaa7;">
-                  <p style="margin: 0 0 10px 0; font-weight: bold; color: #856404;">⚠️ Zoom Auto-Launch Requirements:</p>
-                  <ul style="margin: 0; padding-left: 25px;">
-                    <li style="margin-bottom: 5px;">You must be signed into Zoom for automatic meeting launch to work</li>
-                    <li style="margin-bottom: 5px;">Configure your Meeting ID in Settings → Meeting Settings</li>
-                    <li style="margin-bottom: 5px;">If you're the host, Zoom will automatically start the meeting</li>
-                    <li style="margin-bottom: 5px;">If you're not the host, you'll join the waiting room</li>
-                  </ul>
-                </div>
-                
-                <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">Tips</h3>
-                <ul style="margin-bottom: 25px; padding-left: 25px;">
-                  <li style="margin-bottom: 8px;">For hosts: Sign in to Zoom before the meeting for auto-start capability</li>
-                  <li style="margin-bottom: 8px;">For attendants: This tool provides quick access to join the meeting</li>
-                  <li style="margin-bottom: 8px;">Use with the "Default Tool" setting to open this automatically when KHM Tools starts</li>
-                  <li style="margin-bottom: 8px;">The Zoom path is shared across all tools that use Zoom</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Media Launcher Tool -->
-        <div id="media-launcher" class="tool-panel hidden">
-          <div class="tool-header">
-            <h2>Media Launcher</h2>
-            <button id="media-launcher-help-button" class="help-button" aria-label="Help">?</button>
-          </div>
-          <div class="media-launcher-content">
-            <p class="tool-instructions">Launch all your meeting media tools with one click:</p>
-            
-            <div class="launch-sequence">
-              <ul class="launch-steps">
-                <li id="custommsg-step"><span class="step-text">Custom message</span></li>
-                <li id="obs-step"><span class="step-text">Launch OBS with virtual camera</span></li>
-                <li id="media-manager-step"><span class="step-text">Launch Meeting Media Manager</span></li>
-                <li id="zoom-step"><span class="step-text">Launch Zoom</span></li>
-              </ul>
-            </div>
-            
-            <button id="launch-media-btn" class="launch-media-btn">Start Meeting</button>
-            <p class="settings-hint">Configure tools, meeting ID, and application paths in Settings (⚙️ button at top right)</p>
-            
-            <!-- Progress container (hidden by default) -->
-            <div id="launch-progress-container" class="launch-progress-container hidden">
-              <div class="progress-bar-container">
-                <div id="launch-progress-bar" class="progress-bar"></div>
-              </div>
-              <p id="launch-status" class="launch-status">Preparing to launch...</p>
-            </div>
-            
-            <!-- custommsg popup (hidden by default) -->
-            <div id="custommsg-popup" class="custommsg-popup hidden">
-              <div class="custommsg-popup-content">
-                <h3>Custom Message</h3>
-                <p>Your custom message will appear here.</p>
-                <p></p>
-                <div class="custommsg-popup-progress">
-                  <div class="custommsg-popup-progress-bar"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  <main class="card" role="main">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
     </div>
-  </div>
-  
-  <!-- Unified Settings Popup -->
-  <div id="app-settings-popup" class="unified-settings-popup hidden">
-    <div class="unified-settings-content">
-      <div class="unified-settings-header">
-        <h2>KHM Tools Settings</h2>
-        <button id="close-app-settings" class="close-app-settings">×</button>
-      </div>
-      
-      <div class="unified-settings-body">
-        <!-- Settings Navigation -->
-        <div class="settings-nav">
-          <ul class="settings-nav-list">
-            <li><button id="nav-general" class="settings-nav-btn active">General</button></li>
-            <li><button id="nav-meetings" class="settings-nav-btn">Meeting Settings</button></li>
-            <li><button id="nav-media-launcher" class="settings-nav-btn">Media Launcher</button></li>
-            <li><button id="nav-zoom" class="settings-nav-btn">Zoom Tools</button></li>
-            <li><button id="nav-paths" class="settings-nav-btn">Application Paths</button></li>
-          </ul>
-        </div>
+    <h1>KHM Tools has a new version</h1>
+    <p class="lede">This version of KHM Tools is no longer supported.</p>
+    <p class="body">
+      KHM Tools has been rebuilt from the ground up &mdash; it&rsquo;s smaller, faster,
+      and has all the same tools you already use. Click below to download the new
+      version. After installing, you can <strong>delete this old app</strong>.
+    </p>
+    <button id="download-btn" type="button">Download new version</button>
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+    <div class="url">https://github.com/advenimus/khmtools/releases/latest</div>
+  </main>
 
-        <!-- Settings Content Area -->
-        <div class="settings-content">
-          <!-- General Settings Panel -->
-          <div id="general-settings" class="settings-panel active">
-            <h3>General Application Settings</h3>
-            
-            <div class="settings-option">
-              <div class="settings-group-title">Window Options</div>
-              <div class="checkbox-wrapper">
-                <input type="checkbox" id="always-maximize" name="always-maximize">
-                <label for="always-maximize">Always Open Maximized</label>
-              </div>
-              <p class="settings-description">When enabled, the application will always open maximized to fill the screen.</p>
-              
-              <div class="checkbox-wrapper">
-                <input type="checkbox" id="run-at-logon" name="run-at-logon">
-                <label for="run-at-logon">Run at Logon</label>
-              </div>
-              <p class="settings-description">Automatically start KHM Tools when you log into your computer.</p>
-            </div>
-            
-            <div class="settings-option">
-              <div class="settings-group-title">Startup Options</div>
-              <label for="default-tool">Default open to tool:</label>
-              <select id="default-tool" name="default-tool" class="settings-select">
-                <option value="welcome-screen">Welcome Screen</option>
-                <option value="zoom-attendance-calculator">Zoom Attendance Calculator</option>
-                <option value="start-zoom">Start Zoom</option>
-                <option value="media-launcher">Media Launcher</option>
-              </select>
-              <p class="settings-description">Select which tool should automatically open when the application launches.</p>
-            </div>
-            
-            <div class="settings-option">
-              <div class="settings-group-title">Developer Options</div>
-              <p class="settings-description">Toggle the Chrome DevTools for debugging and development.</p>
-              <button id="toggle-dev-tools-btn" class="toggle-dev-tools-btn">Toggle Developer Tools</button>
-              <p class="settings-hint">You can also use F12 or Cmd+Option+I</p>
-            </div>
-            
-            <div class="settings-option reset-settings-option">
-              <div class="settings-group-title">Reset Settings</div>
-              <p class="settings-description">Reset all settings for all tools back to their default values.</p>
-              <button id="reset-settings-btn" class="reset-settings-btn">Reset to Defaults</button>
-              <div id="reset-confirmation" class="reset-confirmation hidden">Double-click to confirm reset</div>
-            </div>
-          </div>
+  <script>
+    (function () {
+      var btn = document.getElementById('download-btn');
+      var status = document.getElementById('status');
 
-          <!-- Meeting Settings Panel -->
-          <div id="meeting-settings" class="settings-panel">
-            <h3>Universal Meeting Settings</h3>
-            
-            <div class="settings-option">
-              <div class="settings-group-title">Meeting Credentials</div>
-              <div class="form-group">
-                <label for="universal-meeting-id">Meeting ID:</label>
-                <input type="text" id="universal-meeting-id" class="settings-input" placeholder="Enter your recurring meeting ID">
-                <p class="settings-description">This meeting ID will be used by all Zoom tools in the application.</p>
-              </div>
-            </div>
-
-            <div class="settings-option">
-              <div class="settings-group-title">Meeting Schedule</div>
-              
-              <div class="form-group">
-                <label for="midweek-day">Midweek Meeting:</label>
-                <div class="meeting-time-row">
-                  <select id="midweek-day" class="settings-select">
-                    <option value="monday">Monday</option>
-                    <option value="tuesday">Tuesday</option>
-                    <option value="wednesday">Wednesday</option>
-                    <option value="thursday">Thursday</option>
-                    <option value="friday">Friday</option>
-                  </select>
-                  <span>at</span>
-                  <input type="time" id="midweek-time" class="settings-input time-input" value="19:30">
-                </div>
-                <p class="settings-description">Set your midweek meeting day and time.</p>
-              </div>
-              
-              <div class="form-group">
-                <label for="weekend-day">Weekend Meeting:</label>
-                <div class="meeting-time-row">
-                  <select id="weekend-day" class="settings-select">
-                    <option value="saturday">Saturday</option>
-                    <option value="sunday">Sunday</option>
-                  </select>
-                  <span>at</span>
-                  <input type="time" id="weekend-time" class="settings-input time-input" value="10:00">
-                </div>
-                <p class="settings-description">Set your weekend meeting day and time.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Media Launcher Settings Panel -->
-          <div id="media-launcher-settings" class="settings-panel">
-            <h3>Media Launcher Settings</h3>
-            
-            <div class="settings-option">
-              <div class="settings-group-title">Tool Selection</div>
-              <p class="settings-description">Choose which tools to launch when you click "Start Meeting". At least one tool must be enabled.</p>
-              
-              <div class="checkbox-wrapper">
-                <input type="checkbox" id="toggle-obs" name="toggle-obs">
-                <label for="toggle-obs">Launch OBS Studio</label>
-              </div>
-              
-              <div class="checkbox-wrapper">
-                <input type="checkbox" id="toggle-media-manager" name="toggle-media-manager">
-                <label for="toggle-media-manager">Launch Meeting Media Manager</label>
-              </div>
-              
-              <div class="checkbox-wrapper">
-                <input type="checkbox" id="toggle-zoom" name="toggle-zoom">
-                <label for="toggle-zoom">Launch Zoom</label>
-              </div>
-            </div>
-
-            <div class="settings-option">
-              <div class="settings-group-title">Custom Message Settings</div>
-              <p class="settings-description">Configure when and what message to show before launching meeting tools.</p>
-              
-              <div id="custom-message-settings" class="custom-message-settings">
-                <div class="form-group">
-                  <label for="custom-message-display-when">Show Custom Message:</label>
-                  <select id="custom-message-display-when" class="settings-select">
-                    <option value="none">Never</option>
-                    <option value="always">Always</option>
-                    <option value="weekend">For Weekend Meetings Only</option>
-                  </select>
-                  <p class="settings-description">Choose when to display the custom reminder message.</p>
-                </div>
-                
-                <div class="form-group">
-                  <label for="custom-message-title">Title:</label>
-                  <input type="text" id="custom-message-title" class="settings-input" placeholder="Enter custom title">
-                </div>
-                
-                <div class="form-group">
-                  <label for="custom-message-text">Message:</label>
-                  <textarea id="custom-message-text" class="settings-textarea" placeholder="Enter custom message text"></textarea>
-                </div>
-                
-                <div class="form-group">
-                  <label for="custom-message-time">Display Time (seconds):</label>
-                  <input type="number" id="custom-message-time" class="settings-input" min="1" max="30" value="5">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Zoom Tools Settings Panel -->
-          <div id="zoom-settings" class="settings-panel">
-            <h3>Zoom Tools Settings</h3>
-            <p class="settings-description">These settings apply to all Zoom-related tools. The Meeting ID is configured in the Meeting Settings section.</p>
-            
-            <div class="settings-option">
-              <div class="settings-group-title">Zoom Attendance Calculator</div>
-              <p class="settings-description">No additional settings required. This tool uses the universal meeting ID for its calculations.</p>
-            </div>
-          </div>
-
-          <!-- Application Paths Settings Panel -->
-          <div id="paths-settings" class="settings-panel">
-            <h3>Application Paths</h3>
-            <p class="settings-description">Configure the paths to your media applications (optional - uses defaults if not set):</p>
-            
-            <div class="form-group">
-              <label>OBS Studio:</label>
-              <div style="display: flex; gap: 10px; align-items: center;">
-                <button id="browse-obs-path-btn" class="browse-btn">Browse</button>
-                <p id="current-obs-path" class="current-path" style="margin: 0; flex: 1;">Using default path</p>
-              </div>
-            </div>
-            
-            <div class="form-group">
-              <label>Meeting Media Manager:</label>
-              <div style="display: flex; gap: 10px; align-items: center;">
-                <button id="browse-media-manager-path-btn" class="browse-btn">Browse</button>
-                <p id="current-media-manager-path" class="current-path" style="margin: 0; flex: 1;">Using default path</p>
-              </div>
-            </div>
-            
-            <div class="form-group">
-              <label>Zoom Application:</label>
-              <div style="display: flex; gap: 10px; align-items: center;">
-                <button id="browse-zoom-path-btn" class="browse-btn">Browse</button>
-                <p id="current-zoom-path" class="current-path" style="margin: 0; flex: 1;">Using default path</p>
-              </div>
-              <p class="settings-description">This Zoom application will be used by all Zoom tools (Media Launcher and Start Zoom).</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="unified-settings-footer">
-        <p id="settings-status" class="settings-status"></p>
-        <button id="save-unified-settings" class="save-app-settings">Save Settings</button>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Onboarding Wizard -->
-  <div id="onboarding-wizard" class="onboarding-wizard hidden">
-    <div class="onboarding-content">
-      <div class="onboarding-header">
-        <img src="assets/logo.svg" alt="KHM Tools Logo" class="onboarding-logo">
-        <h1>Welcome to KHM Tools!</h1>
-        <p>Let's set up your Kingdom Hall Media tools for the first time.</p>
-      </div>
-      
-      <div class="onboarding-body">
-        <!-- Step 1: Meeting ID -->
-        <div id="onboarding-step-1" class="onboarding-step active">
-          <h2>Step 1 of 7: Meeting Credentials</h2>
-          <div class="onboarding-form">
-            <label for="onboarding-meeting-id">What is your Zoom meeting ID?</label>
-            <input type="text" id="onboarding-meeting-id" class="onboarding-input" placeholder="Enter your recurring meeting ID">
-            <p class="onboarding-hint">This is your congregation's recurring Zoom meeting ID.</p>
-          </div>
-        </div>
-        
-        <!-- Step 2: Meeting Times -->
-        <div id="onboarding-step-2" class="onboarding-step">
-          <h2>Step 2 of 7: Meeting Schedule</h2>
-          <div class="onboarding-form">
-            <div class="meeting-schedule-group">
-              <label>Midweek Meeting:</label>
-              <div class="meeting-time-row">
-                <select id="onboarding-midweek-day" class="onboarding-select">
-                  <option value="monday">Monday</option>
-                  <option value="tuesday" selected>Tuesday</option>
-                  <option value="wednesday">Wednesday</option>
-                  <option value="thursday">Thursday</option>
-                  <option value="friday">Friday</option>
-                </select>
-                <span>at</span>
-                <input type="time" id="onboarding-midweek-time" class="onboarding-input time-input" value="19:30">
-              </div>
-            </div>
-            
-            <div class="meeting-schedule-group">
-              <label>Weekend Meeting:</label>
-              <div class="meeting-time-row">
-                <select id="onboarding-weekend-day" class="onboarding-select">
-                  <option value="saturday">Saturday</option>
-                  <option value="sunday" selected>Sunday</option>
-                </select>
-                <span>at</span>
-                <input type="time" id="onboarding-weekend-time" class="onboarding-input time-input" value="10:00">
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Step 3: Media Manager -->
-        <div id="onboarding-step-3" class="onboarding-step">
-          <h2>Step 3 of 7: Meeting Media Manager</h2>
-          <div class="onboarding-form">
-            <p>Do you use <a href="https://sircharlo.github.io/meeting-media-manager/" class="external-link" target="_blank">Meeting Media Manager</a>?</p>
-            <div class="onboarding-radio-group">
-              <label>
-                <input type="radio" name="use-media-manager" value="yes">
-                <span>Yes, I use Meeting Media Manager</span>
-              </label>
-              <label>
-                <input type="radio" name="use-media-manager" value="no" checked>
-                <span>No, I don't use it</span>
-              </label>
-            </div>
-            <p class="onboarding-hint">Meeting Media Manager helps manage and display media during meetings.</p>
-          </div>
-        </div>
-        
-        <!-- Step 4: OBS -->
-        <div id="onboarding-step-4" class="onboarding-step">
-          <h2>Step 4 of 7: OBS Studio</h2>
-          <div class="onboarding-form">
-            <p>Do you use <a href="https://obsproject.com/download" class="external-link" target="_blank">OBS Studio</a> with Meeting Media Manager?</p>
-            <div class="onboarding-radio-group">
-              <label>
-                <input type="radio" name="use-obs" value="yes">
-                <span>Yes, I use OBS Studio</span>
-              </label>
-              <label>
-                <input type="radio" name="use-obs" value="no" checked>
-                <span>No, I don't use it</span>
-              </label>
-            </div>
-            <p class="onboarding-hint">OBS Studio is used for advanced video mixing and streaming.</p>
-          </div>
-        </div>
-        
-        <!-- Step 5: PC Purpose -->
-        <div id="onboarding-step-5" class="onboarding-step">
-          <h2>Step 5 of 7: PC Purpose</h2>
-          <div class="onboarding-form">
-            <label for="onboarding-pc-purpose">What is the primary purpose of this PC?</label>
-            <select id="onboarding-pc-purpose" class="onboarding-select">
-              <option value="zoom-host" selected>Zoom Video Host PC</option>
-              <option value="zoom-attendant">Zoom Attendant PC</option>
-              <option value="other">Other / General Use</option>
-            </select>
-            <p class="onboarding-hint">This will set which tool opens by default when launching KHM Tools.</p>
-          </div>
-        </div>
-        
-        <!-- Step 6: Custom Message Reminder (only for Zoom Host PC) -->
-        <div id="onboarding-step-6" class="onboarding-step">
-          <h2>Step 6 of 8: Meeting Reminders</h2>
-          <div class="onboarding-form">
-            <p>Do you want to set a popup reminder before meetings start?</p>
-            <p class="onboarding-hint">This can remind brothers to add custom songs, wait for media sync, or check with the AV servant.</p>
-            <div class="onboarding-radio-group">
-              <label>
-                <input type="radio" name="use-reminder" value="yes" checked>
-                <span>Yes, show a reminder</span>
-              </label>
-              <label>
-                <input type="radio" name="use-reminder" value="no">
-                <span>No reminders needed</span>
-              </label>
-            </div>
-            
-            <div id="reminder-settings" style="margin-top: 20px;">
-              <div class="form-group">
-                <label for="onboarding-reminder-when">When to show reminder:</label>
-                <select id="onboarding-reminder-when" class="onboarding-select">
-                  <option value="weekend" selected>Weekend Meetings Only</option>
-                  <option value="always">All Meetings</option>
-                </select>
-              </div>
-              
-              <div class="form-group">
-                <label for="onboarding-reminder-title">Reminder Title:</label>
-                <input type="text" id="onboarding-reminder-title" class="onboarding-input" placeholder="e.g., Pre-Meeting Checklist" value="Pre-Meeting Checklist">
-              </div>
-              
-              <div class="form-group">
-                <label for="onboarding-reminder-message">Reminder Message:</label>
-                <textarea id="onboarding-reminder-message" class="onboarding-textarea" placeholder="Enter your reminder message" style="min-height: 80px;">Remember to:
-• Add speaker's opening song and photo
-• Wait for media files to sync
-• Check with AV servant for any special items</textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Step 7: Auto Launch -->
-        <div id="onboarding-step-7" class="onboarding-step">
-          <h2>Step 7 of 8: Auto Launch</h2>
-          <div class="onboarding-form">
-            <p>Do you want KHM Tools to automatically start when you log in?</p>
-            <div class="onboarding-radio-group">
-              <label>
-                <input type="radio" name="auto-launch" value="yes">
-                <span>Yes, start automatically</span>
-              </label>
-              <label>
-                <input type="radio" name="auto-launch" value="no" checked>
-                <span>No, I'll start it manually</span>
-              </label>
-            </div>
-            <p class="onboarding-hint">If enabled, KHM Tools will open maximized when Windows starts.</p>
-          </div>
-        </div>
-        
-        <!-- Step 8: Application Paths -->
-        <div id="onboarding-step-8" class="onboarding-step">
-          <h2>Step 8 of 8: Application Paths</h2>
-          <div class="onboarding-form">
-            <p>We need to locate the following applications:</p>
-            <div id="onboarding-paths-list" class="onboarding-paths-list">
-              <!-- Dynamically populated -->
-            </div>
-          </div>
-        </div>
-        
-        <!-- Completion Step -->
-        <div id="onboarding-complete" class="onboarding-step">
-          <h2>Setup Complete!</h2>
-          <div class="onboarding-complete-content">
-            <div class="checkmark-circle">
-              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 6L9 17l-5-5"/>
-              </svg>
-            </div>
-            <p>KHM Tools is now configured and ready to use!</p>
-            <p class="onboarding-hint">You can change these settings anytime from the Settings menu.</p>
-          </div>
-        </div>
-      </div>
-      
-      <div class="onboarding-footer">
-        <div class="onboarding-progress">
-          <div class="onboarding-progress-bar" style="width: 14%;"></div>
-        </div>
-        <div class="onboarding-buttons">
-          <button id="onboarding-back" class="onboarding-btn secondary" disabled>Back</button>
-          <button id="onboarding-skip" class="onboarding-btn secondary">Skip Setup</button>
-          <button id="onboarding-next" class="onboarding-btn primary">Next</button>
-          <button id="onboarding-finish" class="onboarding-btn primary hidden">Finish</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Media Launcher Help Window -->
-  <div id="media-launcher-help-popup" class="unified-settings-popup hidden">
-    <div class="unified-settings-content" style="max-width: 700px; height: 80vh; display: flex; flex-direction: column;">
-      <div class="unified-settings-header">
-        <h2>Media Launcher Help</h2>
-        <button id="close-media-launcher-help" class="close-app-settings">×</button>
-      </div>
-      
-      <div class="unified-settings-body" style="flex: 1; overflow-y: auto; padding: 0;">
-        <div class="help-content" style="padding: 30px; line-height: 1.6;">
-          <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">How Media Launcher Works</h3>
-          <p style="margin-bottom: 25px; color: #666;">The Media Launcher tool helps you start all your meeting media applications in the correct order with a single click. It automatically launches each application with a short delay between them to ensure everything starts properly.</p>
-          
-          <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">Launch Sequence</h3>
-          <ol style="margin-bottom: 25px; padding-left: 25px;">
-            <li style="margin-bottom: 8px;"><strong>Custom Message</strong> (optional) - Displays a welcome message for attendees</li>
-            <li style="margin-bottom: 8px;"><strong>OBS Studio</strong> - Starts with virtual camera enabled for video sharing</li>
-            <li style="margin-bottom: 8px;"><strong>Meeting Media Manager</strong> - Opens your meeting media presentation software</li>
-            <li style="margin-bottom: 8px;"><strong>Zoom</strong> - Launches and joins your configured meeting</li>
-          </ol>
-          
-          <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">Settings Explained</h3>
-          
-          <h4 style="margin-top: 20px; margin-bottom: 10px; color: #4a6da7;">Tool Toggles</h4>
-          <p style="margin-bottom: 10px; color: #666;">In Settings → Media Launcher, you can enable or disable individual tools:</p>
-          <ul style="margin-bottom: 20px; padding-left: 25px;">
-            <li style="margin-bottom: 5px;">Toggle each tool on/off based on your needs</li>
-            <li style="margin-bottom: 5px;">Disabled tools will be skipped in the launch sequence</li>
-          </ul>
-          
-          <h4 style="margin-top: 20px; margin-bottom: 10px; color: #4a6da7;">Custom Message Settings</h4>
-          <ul style="margin-bottom: 20px; padding-left: 25px;">
-            <li style="margin-bottom: 10px;"><strong>Display When:</strong>
-              <ul style="margin-top: 5px; padding-left: 20px;">
-                <li style="margin-bottom: 3px;">Always - Shows every time you launch</li>
-                <li style="margin-bottom: 3px;">Weekend meetings only - Shows only on your configured weekend meeting day</li>
-                <li style="margin-bottom: 3px;">Never - Disables the custom message</li>
-              </ul>
-            </li>
-            <li style="margin-bottom: 8px;"><strong>Message Title:</strong> The heading shown in the popup</li>
-            <li style="margin-bottom: 8px;"><strong>Message Text:</strong> Your custom welcome message (supports multiple lines)</li>
-            <li style="margin-bottom: 8px;"><strong>Display Time:</strong> How long the message shows (in seconds)</li>
-          </ul>
-          
-          <h4 style="margin-top: 20px; margin-bottom: 10px; color: #4a6da7;">Application Paths</h4>
-          <p style="margin-bottom: 10px; color: #666;">Configure paths in Settings → Application Paths:</p>
-          <ul style="margin-bottom: 25px; padding-left: 25px;">
-            <li style="margin-bottom: 5px;">Default paths are automatically detected for most applications</li>
-            <li style="margin-bottom: 5px;">Use the Browse button to manually select application locations</li>
-            <li style="margin-bottom: 5px;">Ensure all paths point to valid application files</li>
-          </ul>
-          
-          <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">Important Notes</h3>
-          <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border: 1px solid #ffeaa7;">
-            <p style="margin: 0 0 10px 0; font-weight: bold; color: #856404;">⚠️ Zoom Auto-Launch Requirements:</p>
-            <ul style="margin: 0; padding-left: 25px;">
-              <li style="margin-bottom: 5px;">You must be signed into Zoom for automatic meeting launch to work</li>
-              <li style="margin-bottom: 5px;">Configure your Meeting ID in Settings → Meeting Settings</li>
-              <li style="margin-bottom: 5px;">If you're the host, Zoom will automatically start the meeting</li>
-              <li style="margin-bottom: 5px;">If you're not the host, you'll join the waiting room</li>
-            </ul>
-          </div>
-          
-          <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">Troubleshooting</h3>
-          <ul style="margin-bottom: 25px; padding-left: 25px;">
-            <li style="margin-bottom: 8px;"><strong>Application not launching:</strong> Verify the application path in Settings</li>
-            <li style="margin-bottom: 8px;"><strong>Zoom not joining meeting:</strong> Ensure you're signed in and have a valid Meeting ID</li>
-            <li style="margin-bottom: 8px;"><strong>Custom message not showing:</strong> Check your display settings and meeting schedule</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <script src="renderer.js"></script>
+      btn.addEventListener('click', async function () {
+        status.className = 'status';
+        status.textContent = 'Opening your browser…';
+        try {
+          var result = await window.khmtools.openDownloadPage();
+          if (result && result.success) {
+            status.className = 'status ok';
+            status.textContent = 'Opened in your browser. Download the latest release for your platform.';
+          } else {
+            status.className = 'status err';
+            status.textContent = 'Could not open the browser automatically. Copy the link below.';
+          }
+        } catch (err) {
+          status.className = 'status err';
+          status.textContent = 'Could not open the browser automatically. Copy the link below.';
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
