@@ -46,6 +46,8 @@ khmtools-rs/
 
 - `src-tauri/target/release/bundle/macos/KHM Tools.app` — 6.6 MB, arm64, ad-hoc signed
 - `src-tauri/target/release/bundle/dmg/KHM Tools_2.0.0-beta.1_arm64.dmg` — 3.4 MB
+- `src-tauri/target/release/bundle/macos/KHM Tools.app.tar.gz` — 3.2 MB (updater payload)
+- `src-tauri/target/release/bundle/macos/KHM Tools.app.tar.gz.sig` — minisign signature
 
 (The Electron version was ~150 MB.)
 
