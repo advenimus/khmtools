@@ -1,6 +1,6 @@
 [package]
 name = "khmtools"
-version = "2.0.0"
+version = "2.0.1"
 description = "Kingdom Hall Media tools — Rust edition"
 authors = ["KHM Tools Team"]
 edition = "2021"
@@ -38,7 +38,7 @@ url = "2"
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "0.6"
 objc2-app-kit = { version = "0.3", features = ["NSApplication", "NSImage"] }
-objc2-foundation = { version = "0.3", features = ["NSData", "NSString", "NSThread"] }
+objc2-foundation = { version = "0.3", features = ["NSData", "NSString", "NSThread", "NSProcessInfo"] }
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]

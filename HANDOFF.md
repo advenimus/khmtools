@@ -44,14 +44,14 @@ khmtools-rs/
 
 ## Local build artifacts
 
-- `src-tauri/target/release/bundle/macos/KHM Tools.app` — 6.6 MB, arm64, ad-hoc signed
+- `src-tauri/target/release/bundle/macos/KHM Tools.app` — 6.6 MB, arm64, ad-hoc signed (local builds only — CI releases are Developer ID signed + notarized)
 - `src-tauri/target/release/bundle/dmg/KHM Tools_2.0.0-beta.1_arm64.dmg` — 3.4 MB
 - `src-tauri/target/release/bundle/macos/KHM Tools.app.tar.gz` — 3.2 MB (updater payload)
 - `src-tauri/target/release/bundle/macos/KHM Tools.app.tar.gz.sig` — minisign signature
 
 (The Electron version was ~150 MB.)
 
-To install: open the DMG, drag `KHM Tools.app` to `/Applications`. Because it's ad-hoc signed (no Apple Developer ID yet), the first launch needs **right-click → Open** instead of double-click — that's a one-time prompt to bypass Gatekeeper.
+To install: open the DMG, drag `KHM Tools.app` to `/Applications`. **Local** builds are still ad-hoc signed (right-click → Open on first launch). **CI** builds from tagged releases are Developer ID signed + notarized — see [macOS code signing](#macos-code-signing) below.
 
 ## Verified
 
@@ -142,12 +142,38 @@ Tauri prints a warning. Doesn't break anything but recommended to change to e.g.
 
 ### macOS code signing
 
-App is ad-hoc signed only. To upgrade to Developer ID + notarization later:
-1. Add Apple cert to keychain
-2. Set `signingIdentity` in `tauri.conf.json → bundle.macOS`
-3. Wire notarization secrets in `release.yml` (Tauri docs: https://v2.tauri.app/distribute/sign/macos/)
+CI builds (tagged releases) are signed with **Developer ID Application** + hardened runtime and notarized via App Store Connect API. Local `pnpm tauri build` keeps using ad-hoc signing — `signingIdentity` in `tauri.conf.json` stays `null` and `APPLE_SIGNING_IDENTITY` is only set in CI.
 
-Do **not** reuse the Conduit `JBTB5G7DRQ` cert from the global CLAUDE.md — different project.
+**Files involved:**
+- `src-tauri/tauri.conf.json` → `bundle.macOS.entitlements: "entitlements.mac.plist"`
+- `src-tauri/entitlements.mac.plist` — empty dict; codesign still applies hardened runtime via the `--options runtime` flag tauri-action sets. The Electron-era `allow-jit`/`allow-unsigned-executable-memory`/etc. were V8-specific and **don't apply** to Tauri's WKWebView.
+- `.github/workflows/release.yml` → "Import Apple Developer ID certificate" + "Write App Store Connect API key" steps gated on `matrix.os == 'macos-latest'`.
+
+**Required repo secrets** (all eight are needed; macOS legs fail-fast without them):
+
+| Secret | Source | Purpose |
+|---|---|---|
+| `APPLE_CERTIFICATE` | `openssl base64 -A -in DeveloperID.p12` | base64-encoded .p12 |
+| `APPLE_CERTIFICATE_PASSWORD` | password set at .p12 export | unlocks the .p12 |
+| `APPLE_SIGNING_IDENTITY` | `security find-identity -v -p codesigning` (the quoted string) | full identity, e.g. `Developer ID Application: Chris Vautour (XXXXXXXXXX)` |
+| `KEYCHAIN_PASSWORD` | any random string | password for the throwaway CI keychain |
+| `APPLE_API_KEY_BASE64` | `base64 -i AuthKey_XXXX.p8` | base64-encoded App Store Connect .p8 |
+| `APPLE_API_KEY_ID` | App Store Connect → Users and Access → Keys | 10-char Key ID — passed as `APPLE_API_KEY` to tauri-action (it's the ID, not the file) |
+| `APPLE_API_ISSUER` | App Store Connect → Users and Access → Keys | UUID issuer ID |
+| `APPLE_TEAM_ID` | Apple Developer membership page | 10-char team ID |
+
+Set with `gh secret set NAME < file` or via the repo Settings UI.
+
+The Apple Developer Team is `JBTB5G7DRQ` (Christopher Vautour) — same Apple Developer account that signs Conduit. They're separate bundles (`com.khmtools.app` vs Conduit's), but share the Team ID and signing identity by design.
+
+**Verify a release after the fact:**
+```bash
+codesign -dvv "/Applications/KHM Tools.app"
+codesign --verify --deep --strict --verbose=2 "/Applications/KHM Tools.app"
+spctl -a -vv -t exec "/Applications/KHM Tools.app"   # expect: source=Notarized Developer ID
+stapler validate "/Applications/KHM Tools.app"       # expect: The validate action worked!
+```
+
 
 ### Windows code signing
 
@@ -167,9 +193,10 @@ pnpm tauri build                   # release build (re-do the DMG manually on ma
 
 1. Visual smoke-test from your end (the screens listed above)
 2. Decide if `com.khmtools.app` identifier should be renamed
-3. Push the rust-rewrite branch + tag a `v2.0.0-beta.1` to exercise the CI workflow
-4. Once a beta build goes green, sign it on macOS / Windows if you want to skip Gatekeeper / SmartScreen prompts
-5. After enough beta soak, tag `v2.0.0` for stable
+3. Set the eight Apple signing secrets in the GitHub repo (see [macOS code signing](#macos-code-signing))
+4. Push the rust-rewrite branch + tag a `v2.0.0-beta.1` to exercise the CI workflow + signing path
+5. Verify the produced `.dmg` with `spctl -a -vv` / `stapler validate` (commands in the signing section)
+6. After enough beta soak, tag `v2.0.0` for stable
 
 ## Open questions for you
 
