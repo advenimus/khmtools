@@ -41,9 +41,14 @@
   </div>
 {:else if $route === "onboarding"}
   <Onboarding
-    on:done={() => {
+    on:done={async () => {
       needsOnboarding = false;
-      navigate("dashboard");
+      try {
+        const settings = await api.getAppSettings();
+        navigate(settings.default_tool ?? "dashboard");
+      } catch {
+        navigate("dashboard");
+      }
     }}
   />
 {:else}

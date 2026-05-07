@@ -122,6 +122,4 @@ export const api = {
 
   // Logs
   openLogsDir: () => invoke<void>("open_logs_dir"),
-  resetReturnInfo: () =>
-    invoke<{ requires_restart: boolean }>("reset_return_info"),
 };
