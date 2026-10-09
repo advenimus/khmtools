@@ -4,7 +4,7 @@ use std::process::Command;
 
 fn env_dirs(vars: &[&str]) -> Vec<PathBuf> {
     vars.iter()
-        .filter_map(|v| std::env::var_os(v))
+        .filter_map(std::env::var_os)
         .map(PathBuf::from)
         .collect()
 }
