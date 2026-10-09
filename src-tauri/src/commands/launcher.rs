@@ -1,11 +1,12 @@
-use crate::domain::meeting_schedule;
 use crate::domain::settings::{
     files, AppPaths, CustomMessageDisplay, MediaLauncherSettings, MeetingSettings,
 };
+use crate::domain::{meeting_schedule, zoom};
+use crate::error::AppResult;
 use crate::platform::{self, Kind};
 use crate::storage;
-use serde::Serialize;
-use std::path::{Path, PathBuf};
+use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use tauri_plugin_dialog::DialogExt;
 
 #[derive(Serialize)]
@@ -29,18 +30,57 @@ impl LaunchResult {
     }
 }
 
-fn resolve_path(kind: Kind) -> Option<PathBuf> {
-    let paths: AppPaths = storage::load_or_default(files::PATHS);
-    let configured = match kind {
-        Kind::Zoom => paths.zoom,
-        Kind::Obs => paths.obs,
-        Kind::MediaManager => paths.media_manager,
-    };
-    configured.or_else(|| platform::default_path(kind))
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum AppKind {
+    Zoom,
+    Obs,
+    MediaManager,
 }
 
-fn path_exists(p: &Path) -> bool {
-    p.exists()
+impl From<AppKind> for Kind {
+    fn from(k: AppKind) -> Self {
+        match k {
+            AppKind::Zoom => Kind::Zoom,
+            AppKind::Obs => Kind::Obs,
+            AppKind::MediaManager => Kind::MediaManager,
+        }
+    }
+}
+
+fn configured_path(paths: &AppPaths, kind: Kind) -> Option<PathBuf> {
+    match kind {
+        Kind::Zoom => paths.zoom.clone(),
+        Kind::Obs => paths.obs.clone(),
+        Kind::MediaManager => paths.media_manager.clone(),
+    }
+}
+
+pub fn resolve_path(kind: Kind) -> Option<PathBuf> {
+    let paths: AppPaths = storage::load_or_default(files::PATHS);
+    configured_path(&paths, kind).or_else(|| platform::default_path(kind))
+}
+
+fn launch_kind(kind: Kind) -> LaunchResult {
+    let name = kind.label();
+    let Some(path) = resolve_path(kind) else {
+        return LaunchResult::err(format!(
+            "{name} wasn't found. Set its location in Settings → Application Paths."
+        ));
+    };
+    if !path.exists() {
+        return LaunchResult::err(format!(
+            "{name} wasn't found at {}. Set its location in Settings → Application Paths.",
+            path.display()
+        ));
+    }
+    match platform::launch_app(kind, &path) {
+        Ok(()) => LaunchResult::ok(format!("{name} opened")),
+        Err(e) => {
+            tracing::error!("launching {name} at {} failed: {e}", path.display());
+            LaunchResult::err(format!("{name} didn't start: {e}"))
+        }
+    }
 }
 
 #[tauri::command]
@@ -59,107 +99,85 @@ pub fn default_media_manager_path() -> Option<PathBuf> {
 }
 
 #[tauri::command]
-pub async fn browse_for_app(app: tauri::AppHandle, kind: String) -> Option<PathBuf> {
-    use tokio::sync::oneshot;
-
-    let kind_enum = match kind.as_str() {
-        "zoom" => Kind::Zoom,
-        "obs" => Kind::Obs,
-        "media_manager" => Kind::MediaManager,
-        _ => return None,
+pub async fn browse_for_app(app: tauri::AppHandle, kind: AppKind) -> AppResult<Option<PathBuf>> {
+    let Some(path) = pick_app_file(&app, kind.into()).await else {
+        return Ok(None);
     };
+    storage::update(files::PATHS, |paths: AppPaths| {
+        set_path(paths, kind, Some(path.clone()))
+    })?;
+    Ok(Some(path))
+}
 
-    let title = match kind_enum {
-        Kind::Zoom => "Select Zoom application",
-        Kind::Obs => "Select OBS Studio application",
-        Kind::MediaManager => "Select Meeting Media Manager application",
-    };
-
-    let (tx, rx) = oneshot::channel();
-    let mut builder = app.dialog().file().set_title(title);
+async fn pick_app_file(app: &tauri::AppHandle, kind: Kind) -> Option<PathBuf> {
+    let (tx, rx) = tokio::sync::oneshot::channel();
+    let mut builder = app
+        .dialog()
+        .file()
+        .set_title(format!("Select the {} application", kind.label()));
     if cfg!(target_os = "macos") {
         builder = builder.add_filter("Applications", &["app"]);
     } else if cfg!(target_os = "windows") {
-        builder = builder.add_filter("Executables", &["exe"]);
+        builder = builder.add_filter("Programs", &["exe"]);
     }
     builder.pick_file(move |p| {
         let _ = tx.send(p);
     });
-
-    let chosen = rx.await.ok().flatten()?;
-    let path: PathBuf = chosen.into_path().ok()?;
-
-    let mut paths: AppPaths = storage::load_or_default(files::PATHS);
-    match kind_enum {
-        Kind::Zoom => paths.zoom = Some(path.clone()),
-        Kind::Obs => paths.obs = Some(path.clone()),
-        Kind::MediaManager => paths.media_manager = Some(path.clone()),
-    }
-    let _ = storage::save(files::PATHS, &paths);
-    Some(path)
+    rx.await.ok().flatten()?.into_path().ok()
 }
 
-#[tauri::command]
+pub fn set_path(paths: AppPaths, kind: AppKind, value: Option<PathBuf>) -> AppPaths {
+    match kind {
+        AppKind::Zoom => AppPaths {
+            zoom: value,
+            ..paths
+        },
+        AppKind::Obs => AppPaths {
+            obs: value,
+            ..paths
+        },
+        AppKind::MediaManager => AppPaths {
+            media_manager: value,
+            ..paths
+        },
+    }
+}
+
+#[tauri::command(async)]
 pub fn launch_zoom() -> LaunchResult {
     let meeting: MeetingSettings = storage::load_or_default(files::MEETING);
-    let id = meeting.meeting_id.trim();
-    if !id.is_empty() {
-        let cleaned: String = id.chars().filter(|c| c.is_ascii_digit()).collect();
-        if cleaned.len() >= 9 {
-            return match platform::launch_zoom_meeting(&cleaned) {
-                Ok(_) => LaunchResult::ok(format!("Launching meeting {cleaned}")),
-                Err(e) => LaunchResult::err(format!("Couldn't open Zoom URL: {e}")),
+    match zoom::parse(&meeting.meeting_id, &meeting.passcode) {
+        Ok(join) => join_meeting(&join),
+        Err(zoom::ParseError::Empty) => launch_kind(Kind::Zoom),
+        Err(e) => LaunchResult::err(format!("{e} Fix it in Settings → Meetings.")),
+    }
+}
+
+fn join_meeting(join: &zoom::ZoomJoin) -> LaunchResult {
+    match platform::open_url(&zoom::join_url(join)) {
+        Ok(()) => LaunchResult::ok(format!("Joining meeting {}", join.meeting_id)),
+        Err(e) => {
+            tracing::warn!("zoommtg link failed: {e}");
+            let fallback = launch_kind(Kind::Zoom);
+            let message = if fallback.success {
+                "Zoom opened, but it couldn't join the meeting automatically. Join it from Zoom."
+                    .to_string()
+            } else {
+                format!("Zoom couldn't join the meeting. {}", fallback.message)
             };
+            LaunchResult::err(message)
         }
     }
-
-    let Some(path) = resolve_path(Kind::Zoom) else {
-        return LaunchResult::err(
-            "Zoom path not configured. Set it in Settings → Application Paths.",
-        );
-    };
-    if !path_exists(&path) {
-        return LaunchResult::err(format!("Zoom not found at {}", path.display()));
-    }
-    match platform::launch_app(Kind::Zoom, &path) {
-        Ok(_) => LaunchResult::ok("Zoom launched"),
-        Err(e) => LaunchResult::err(format!("Failed to launch Zoom: {e}")),
-    }
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn launch_obs() -> LaunchResult {
-    let Some(path) = resolve_path(Kind::Obs) else {
-        return LaunchResult::err(
-            "OBS path not configured. Set it in Settings → Application Paths.",
-        );
-    };
-    if !path_exists(&path) {
-        return LaunchResult::err(format!("OBS not found at {}", path.display()));
-    }
-    match platform::launch_app(Kind::Obs, &path) {
-        Ok(_) => LaunchResult::ok("OBS launched"),
-        Err(e) => LaunchResult::err(format!("Failed to launch OBS: {e}")),
-    }
+    launch_kind(Kind::Obs)
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn launch_media_manager() -> LaunchResult {
-    let Some(path) = resolve_path(Kind::MediaManager) else {
-        return LaunchResult::err(
-            "Meeting Media Manager path not configured. Set it in Settings → Application Paths.",
-        );
-    };
-    if !path_exists(&path) {
-        return LaunchResult::err(format!(
-            "Meeting Media Manager not found at {}",
-            path.display()
-        ));
-    }
-    match platform::launch_app(Kind::MediaManager, &path) {
-        Ok(_) => LaunchResult::ok("Meeting Media Manager launched"),
-        Err(e) => LaunchResult::err(format!("Failed to launch Media Manager: {e}")),
-    }
+    launch_kind(Kind::MediaManager)
 }
 
 #[tauri::command]
@@ -169,6 +187,64 @@ pub fn should_show_custom_message() -> bool {
     match media.custom_message.display_when {
         CustomMessageDisplay::None => false,
         CustomMessageDisplay::Always => true,
-        CustomMessageDisplay::Weekend => meeting_schedule::is_today(&meeting.weekend.day),
+        CustomMessageDisplay::Weekend => meeting_schedule::is_meeting_day(
+            &meeting.weekend.day,
+            &meeting.weekend.time,
+            chrono::Local::now().naive_local(),
+        ),
     }
+}
+
+#[derive(Serialize)]
+pub struct MeetingInputCheck {
+    pub valid: bool,
+    pub meeting_id: Option<String>,
+    pub has_passcode: bool,
+    pub message: Option<String>,
+}
+
+#[tauri::command]
+pub fn check_meeting_input(meeting_id: String, passcode: String) -> MeetingInputCheck {
+    match zoom::parse(&meeting_id, &passcode) {
+        Ok(j) => MeetingInputCheck {
+            valid: true,
+            has_passcode: j.passcode.is_some(),
+            meeting_id: Some(j.meeting_id),
+            message: None,
+        },
+        Err(e) => MeetingInputCheck {
+            valid: matches!(e, zoom::ParseError::Empty),
+            meeting_id: None,
+            has_passcode: false,
+            message: Some(e.to_string()),
+        },
+    }
+}
+
+#[derive(Serialize)]
+pub struct SetupStatus {
+    pub problems: Vec<String>,
+}
+
+#[tauri::command(async)]
+pub fn setup_status() -> SetupStatus {
+    let meeting: MeetingSettings = storage::load_or_default(files::MEETING);
+    let media: MediaLauncherSettings = storage::load_or_default(files::MEDIA);
+    let wanted = [
+        (media.toggles.launch_obs, Kind::Obs),
+        (media.toggles.launch_media_manager, Kind::MediaManager),
+    ];
+    let mut problems: Vec<String> = wanted
+        .iter()
+        .filter(|(on, kind)| *on && !resolve_path(*kind).is_some_and(|p| p.exists()))
+        .map(|(_, kind)| format!("{} wasn't found on this computer.", kind.label()))
+        .collect();
+    match zoom::parse(&meeting.meeting_id, &meeting.passcode) {
+        Ok(_) => {}
+        Err(zoom::ParseError::Empty) => {
+            problems.push("No Zoom meeting ID is set, so Zoom will open without joining.".into())
+        }
+        Err(e) => problems.push(e.to_string()),
+    }
+    SetupStatus { problems }
 }

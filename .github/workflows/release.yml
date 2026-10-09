@@ -7,11 +7,62 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+-beta.*' # beta,   e.g. v2.0.0-beta.1
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
+  verify:
+    name: Verify tag
+    runs-on: ubuntu-22.04
+    outputs:
+      tag: ${{ steps.detect.outputs.tag }}
+      channel: ${{ steps.detect.outputs.channel }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Detect channel and check versions match the tag
+        id: detect
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          if [[ "$TAG" == *"-beta"* ]]; then CHANNEL=beta; else CHANNEL=stable; fi
+
+          CONF=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          PKG=$(node -p "require('./package.json').version")
+          CARGO=$(sed -n 's/^version = "\(.*\)"/\1/p' src-tauri/Cargo.toml | head -1)
+          for pair in "tauri.conf.json:$CONF" "package.json:$PKG" "Cargo.toml:$CARGO"; do
+            if [ "${pair#*:}" != "$VERSION" ]; then
+              echo "::error::${pair%%:*} says ${pair#*:} but the tag is $TAG. Bump the version before tagging."
+              exit 1
+            fi
+          done
+
+          git fetch --no-tags origin main dev 2>/dev/null || git fetch --no-tags origin main
+          ALLOWED="origin/main"
+          if [ "$CHANNEL" = beta ] && git rev-parse --verify -q origin/dev >/dev/null; then
+            ALLOWED="origin/main origin/dev"
+          fi
+          ok=false
+          for b in $ALLOWED; do
+            if git merge-base --is-ancestor "$GITHUB_SHA" "$b"; then ok=true; fi
+          done
+          if [ "$ok" != true ]; then
+            echo "::error::$TAG points at a commit that isn't on $ALLOWED."
+            exit 1
+          fi
+
+          echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
   build:
     name: Build (${{ matrix.os }})
+    needs: verify
+    # Requires approval in the "release" environment before any signing
+    # secrets are handed to the build.
+    environment: release
     strategy:
       fail-fast: false
       matrix:
@@ -26,38 +77,25 @@ jobs:
             target: x86_64-unknown-linux-gnu
             args: '--bundles deb,appimage,updater'
     runs-on: ${{ matrix.os }}
-    outputs:
-      tag: ${{ steps.detect.outputs.tag }}
-      channel: ${{ steps.detect.outputs.channel }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
-      - name: Detect channel
-        id: detect
-        shell: bash
-        run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          if [[ "$TAG" == *"-beta"* ]]; then
-            echo "channel=beta" >> "$GITHUB_OUTPUT"
-          else
-            echo "channel=stable" >> "$GITHUB_OUTPUT"
-          fi
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
         with:
           version: 10
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 20
           cache: pnpm
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249 # stable
         with:
           targets: ${{ matrix.target }}
 
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           workspaces: src-tauri
 
@@ -119,7 +157,7 @@ jobs:
         run: pnpm tauri build ${{ matrix.args }}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: dist-${{ matrix.target }}
           path: |
@@ -128,11 +166,15 @@ jobs:
 
   publish:
     name: Publish release
-    needs: build
+    needs: [verify, build]
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           path: dist
           merge-multiple: true
@@ -141,13 +183,13 @@ jobs:
         shell: bash
         run: |
           mkdir -p release
-          # Find all bundle artifacts and the .sig + tar/zip needed for the updater
+          # Installers plus the .sig files the updater needs. Tauri 2 signs the
+          # Windows .exe and Linux .AppImage directly.
           find dist -type f \( \
             -name '*.dmg' -o \
             -name '*.app.tar.gz' -o -name '*.app.tar.gz.sig' -o \
-            -name '*.exe' -o \
-            -name '*-setup.nsis.zip' -o -name '*-setup.nsis.zip.sig' -o \
-            -name '*.AppImage' -o -name '*.AppImage.tar.gz' -o -name '*.AppImage.tar.gz.sig' -o \
+            -name '*-setup.exe' -o -name '*-setup.exe.sig' -o \
+            -name '*.AppImage' -o -name '*.AppImage.sig' -o \
             -name '*.deb' \) -print -exec cp {} release/ \;
           # GitHub renames release assets by replacing spaces with dots; do the same
           # locally so the manifest URLs match the actual download paths.
@@ -162,8 +204,8 @@ jobs:
 
       - name: Build latest.json
         env:
-          TAG: ${{ needs.build.outputs.tag }}
-          CHANNEL: ${{ needs.build.outputs.channel }}
+          TAG: ${{ needs.verify.outputs.tag }}
+          CHANNEL: ${{ needs.verify.outputs.channel }}
         run: |
           node .github/workflows/make-manifest.mjs \
             --version "${TAG#v}" \
@@ -173,10 +215,11 @@ jobs:
             --out release
 
       - name: Create / update release (stable)
-        if: needs.build.outputs.channel == 'stable'
+        if: needs.verify.outputs.channel == 'stable'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ needs.build.outputs.tag }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.verify.outputs.tag }}
         run: |
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" release/* --clobber
@@ -188,10 +231,11 @@ jobs:
           fi
 
       - name: Create / update release (beta) and move beta tag
-        if: needs.build.outputs.channel == 'beta'
+        if: needs.verify.outputs.channel == 'beta'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ needs.build.outputs.tag }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.verify.outputs.tag }}
         run: |
           # 1. Specific versioned beta release
           if gh release view "$TAG" >/dev/null 2>&1; then
@@ -202,11 +246,21 @@ jobs:
               --generate-notes \
               --prerelease
           fi
-          # 2. Moving "beta" release for the updater endpoint
+
+          # 2. Standing "beta" release the updater reads. Updated in place so
+          #    the endpoint never 404s, and the manifest goes up last so it
+          #    never points at files that aren't uploaded yet.
+          NOTES="Floating release pointing to the latest beta build. Source: $TAG"
           if gh release view beta >/dev/null 2>&1; then
-            gh release delete beta --cleanup-tag --yes
+            gh api -X PATCH "repos/$GH_REPO/git/refs/tags/beta" -f sha="$GITHUB_SHA" -F force=true
+          else
+            gh release create beta --title "Latest beta ($TAG)" --notes "$NOTES" --prerelease --target "$GITHUB_SHA"
           fi
-          gh release create beta release/* \
-            --title "Latest beta ($TAG)" \
-            --notes "Floating release pointing to the latest beta build. Source: $TAG" \
-            --prerelease
+          find release -type f ! -name 'latest-beta.json' -print0 | xargs -0 gh release upload beta --clobber
+          gh release upload beta release/latest-beta.json --clobber
+          gh release view beta --json assets -q '.assets[].name' | while read -r asset; do
+            if [ ! -f "release/$asset" ]; then
+              gh release delete-asset beta "$asset" --yes
+            fi
+          done
+          gh release edit beta --title "Latest beta ($TAG)" --notes "$NOTES"

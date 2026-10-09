@@ -1,22 +1,30 @@
 import type { Config } from "tailwindcss";
 
+const token = (name: string) => `rgb(var(--${name}-rgb) / <alpha-value>)`;
+
+const TOKENS = [
+  "bg",
+  "surface",
+  "surface-2",
+  "border",
+  "text",
+  "text-mute",
+  "brand",
+  "brand-hover",
+  "brand-solid",
+  "brand-solid-hover",
+  "success",
+  "warning",
+  "danger",
+  "danger-solid",
+  "control-off",
+];
+
 export default {
   content: ["./index.html", "./src/**/*.{svelte,ts,js}"],
   theme: {
     extend: {
-      colors: {
-        bg: "var(--bg)",
-        surface: "var(--surface)",
-        "surface-2": "var(--surface-2)",
-        border: "var(--border)",
-        text: "var(--text)",
-        "text-mute": "var(--text-mute)",
-        brand: "var(--brand)",
-        "brand-hover": "var(--brand-hover)",
-        success: "var(--success)",
-        warning: "var(--warning)",
-        danger: "var(--danger)",
-      },
+      colors: Object.fromEntries(TOKENS.map((t) => [t, token(t)])),
       boxShadow: {
         soft: "var(--shadow)",
       },

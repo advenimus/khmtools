@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Build a Tauri updater manifest (latest.json / latest-beta.json) by scanning
-// the staged release directory for signed bundle artifacts and the matching
-// .sig files emitted by `tauri build`.
+// Build a Tauri updater manifest (latest.json / latest-beta.json) from the
+// staged, signed release files. Fails the release if any platform or
+// signature is missing, so a broken manifest can never be published.
 //
 // Usage:
 //   node make-manifest.mjs --version 2.0.0 --tag v2.0.0 --channel stable \
@@ -16,65 +16,48 @@ function arg(name) {
   return process.argv[i + 1] ?? null;
 }
 
+function fail(message) {
+  console.error(`::error::${message}`);
+  process.exit(1);
+}
+
 const version = arg("version");
 const tag = arg("tag");
 const channel = arg("channel");
 const releaseDir = arg("release-dir") ?? "release";
 const outDir = arg("out") ?? "release";
 
-if (!version || !tag || !channel) {
-  console.error("Missing --version, --tag, or --channel");
-  process.exit(1);
-}
+if (!version || !tag || !channel) fail("Missing --version, --tag, or --channel");
 
 const owner = "advenimus";
 const repo = "khmtools";
 const releaseTag = channel === "beta" ? "beta" : tag;
 const baseUrl = `https://github.com/${owner}/${repo}/releases/download/${releaseTag}`;
 
-function findArtifact(predicate) {
-  return fs.readdirSync(releaseDir).find(predicate) ?? null;
-}
+// Tauri 2 signs the installers themselves (no .zip / .tar.gz wrapper) except
+// on macOS, where the updater payload is the .app.tar.gz.
+const PLATFORMS = {
+  "darwin-aarch64": (f) => f.endsWith(".app.tar.gz"),
+  "windows-x86_64": (f) => f.endsWith("-setup.exe"),
+  "linux-x86_64": (f) => f.endsWith(".AppImage"),
+};
 
-function readSig(file) {
+const files = fs.readdirSync(releaseDir);
+
+function entryFor(platform, matches) {
+  const found = files.filter(matches);
+  if (found.length !== 1) fail(`${platform}: expected 1 updater file, found ${found.length} (${found.join(", ")})`);
+  const file = found[0];
   const sigPath = path.join(releaseDir, `${file}.sig`);
-  if (!fs.existsSync(sigPath)) {
-    console.warn(`No .sig for ${file}`);
-    return "";
-  }
-  return fs.readFileSync(sigPath, "utf8").trim();
+  if (!fs.existsSync(sigPath)) fail(`${platform}: ${file}.sig is missing`);
+  const signature = fs.readFileSync(sigPath, "utf8").trim();
+  if (!signature) fail(`${platform}: ${file}.sig is empty`);
+  return { signature, url: `${baseUrl}/${encodeURIComponent(file)}` };
 }
 
-const platforms = {};
-
-// macOS aarch64 — only Apple Silicon is built (Intel was dropped in v2.0.0).
-// Tauri names the artifact "KHM Tools.app.tar.gz" with no arch suffix; the
-// staging step normalizes spaces to dots to match GitHub's release-asset name.
-const macAarch = findArtifact((f) => f.endsWith(".app.tar.gz"));
-if (macAarch) {
-  platforms["darwin-aarch64"] = {
-    signature: readSig(macAarch),
-    url: `${baseUrl}/${encodeURIComponent(macAarch)}`,
-  };
-}
-
-// Windows x86_64
-const winSetup = findArtifact((f) => f.endsWith("-setup.nsis.zip"));
-if (winSetup) {
-  platforms["windows-x86_64"] = {
-    signature: readSig(winSetup),
-    url: `${baseUrl}/${encodeURIComponent(winSetup)}`,
-  };
-}
-
-// Linux x86_64
-const appImage = findArtifact((f) => f.endsWith(".AppImage.tar.gz"));
-if (appImage) {
-  platforms["linux-x86_64"] = {
-    signature: readSig(appImage),
-    url: `${baseUrl}/${encodeURIComponent(appImage)}`,
-  };
-}
+const platforms = Object.fromEntries(
+  Object.entries(PLATFORMS).map(([platform, matches]) => [platform, entryFor(platform, matches)])
+);
 
 const manifest = {
   version,

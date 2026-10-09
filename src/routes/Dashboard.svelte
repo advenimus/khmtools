@@ -1,5 +1,6 @@
 <script lang="ts">
   import { navigate } from "../lib/router";
+  import SetupWarning from "../lib/components/SetupWarning.svelte";
 
   type TileId = "media" | "zoom" | "attendance" | "settings";
 
@@ -33,6 +34,8 @@
   <p class="mt-1 text-sm text-text-mute">Pick a tool to get started.</p>
 </div>
 
+<SetupWarning />
+
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
   {#each tiles as tile}
     <button
@@ -42,9 +45,9 @@
     >
       <div
         class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg"
-        style="background:{tile.primary ? 'var(--brand)' : 'var(--surface-2)'};color:{tile.primary ? '#fff' : 'var(--brand)'}"
+        style="background:{tile.primary ? 'var(--brand-solid)' : 'var(--surface-2)'};color:{tile.primary ? '#fff' : 'var(--brand)'}"
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           {#if tile.route === "media"}
             <polygon points="5 3 19 12 5 21 5 3"/>
           {:else if tile.route === "zoom"}

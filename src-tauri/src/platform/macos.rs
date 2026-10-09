@@ -1,4 +1,5 @@
-use super::Kind;
+use super::{Kind, OBS_VIRTUAL_CAM_ARG};
+use std::io;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -11,6 +12,20 @@ pub fn default_path(kind: Kind) -> Option<PathBuf> {
     Some(PathBuf::from(p))
 }
 
-pub fn launch_app(_kind: Kind, path: &Path) -> std::io::Result<()> {
-    Command::new("open").arg("-a").arg(path).spawn().map(|_| ())
+pub fn launch_app(kind: Kind, path: &Path) -> io::Result<()> {
+    let mut cmd = Command::new("open");
+    cmd.arg("-a").arg(path);
+    if kind == Kind::Obs {
+        cmd.args(["--args", OBS_VIRTUAL_CAM_ARG]);
+    }
+    let status = cmd.status()?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err(io::Error::other(format!(
+            "macOS couldn't open {} (exit code {})",
+            path.display(),
+            status.code().unwrap_or(-1)
+        )))
+    }
 }

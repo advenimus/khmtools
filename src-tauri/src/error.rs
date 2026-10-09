@@ -3,16 +3,16 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum AppError {
-    #[error("io error: {0}")]
+    #[error("Couldn't read or write a settings file ({0}). Check that your user folder isn't full or read-only.")]
     Io(#[from] std::io::Error),
 
-    #[error("json error: {0}")]
+    #[error("A settings file has invalid data ({0}).")]
     Json(#[from] serde_json::Error),
 
-    #[error("tauri error: {0}")]
+    #[error("{0}")]
     Tauri(#[from] tauri::Error),
 
-    #[error("config dir not found")]
+    #[error("Couldn't find your user settings folder.")]
     ConfigDirMissing,
 
     #[error("{0}")]
@@ -22,6 +22,12 @@ pub enum AppError {
 impl AppError {
     pub fn other(msg: impl Into<String>) -> Self {
         AppError::Other(msg.into())
+    }
+}
+
+impl From<crate::domain::zoom::ParseError> for AppError {
+    fn from(e: crate::domain::zoom::ParseError) -> Self {
+        AppError::other(e.to_string())
     }
 }
 

@@ -1,27 +1,41 @@
-use auto_launch::AutoLaunchBuilder;
-use std::env::current_exe;
+use crate::domain::settings::{files, AppSettings};
+use crate::error::{AppError, AppResult};
+use crate::platform::autostart;
+use crate::storage;
 
-fn instance() -> Option<auto_launch::AutoLaunch> {
-    let exe = current_exe().ok()?;
-    AutoLaunchBuilder::new()
-        .set_app_name("KHM Tools")
-        .set_app_path(&exe.to_string_lossy())
-        .build()
-        .ok()
+pub fn set(enabled: bool) -> AppResult<()> {
+    autostart::set(enabled).map_err(|e| {
+        tracing::error!("run-at-login change failed: {e}");
+        AppError::other(format!(
+            "Your computer didn't allow the change to run at login: {e}"
+        ))
+    })
 }
 
-#[tauri::command]
-pub fn auto_launch_enabled() -> bool {
-    instance()
-        .and_then(|al| al.is_enabled().ok())
-        .unwrap_or(false)
+/// Brings the OS login entry in line with the saved setting, e.g. after
+/// upgrading from a version that registered it differently.
+pub fn reconcile_on_startup() {
+    let app: AppSettings = storage::load_or_default(files::APP);
+    if app.run_at_logon && autostart::is_enabled() == Ok(false) {
+        autostart::remove_legacy_login_item();
+        if let Err(e) = autostart::set(true) {
+            tracing::warn!("couldn't restore run-at-login: {e}");
+        }
+    }
 }
 
-#[tauri::command]
-pub fn auto_launch_set(enabled: bool) -> bool {
-    let Some(al) = instance() else {
-        return false;
-    };
-    let res = if enabled { al.enable() } else { al.disable() };
-    res.is_ok()
+#[tauri::command(async)]
+pub fn auto_launch_enabled() -> AppResult<bool> {
+    autostart::is_enabled().map_err(AppError::other)
+}
+
+#[tauri::command(async)]
+pub fn auto_launch_set(enabled: bool) -> AppResult<bool> {
+    set(enabled)?;
+    let actual = autostart::is_enabled().map_err(AppError::other)?;
+    storage::update(files::APP, |app: AppSettings| AppSettings {
+        run_at_logon: actual,
+        ..app
+    })?;
+    Ok(actual)
 }

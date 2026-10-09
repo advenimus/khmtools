@@ -1,39 +1,62 @@
-use super::{cmd_no_window, Kind};
+use super::{cmd_no_window, reap, Kind, OBS_VIRTUAL_CAM_ARG};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-pub fn default_path(kind: Kind) -> Option<PathBuf> {
+fn env_dirs(vars: &[&str]) -> Vec<PathBuf> {
+    vars.iter()
+        .filter_map(|v| std::env::var_os(v))
+        .map(PathBuf::from)
+        .collect()
+}
+
+fn candidates(kind: Kind) -> Vec<PathBuf> {
+    let program_files = env_dirs(&["ProgramFiles", "ProgramW6432", "ProgramFiles(x86)"]);
+    let local = env_dirs(&["LOCALAPPDATA"]);
+    let roaming = env_dirs(&["APPDATA"]);
+
+    let join_all = |bases: &[PathBuf], rel: &str| -> Vec<PathBuf> {
+        bases.iter().map(|b| b.join(rel)).collect()
+    };
+
     match kind {
-        Kind::Zoom => {
-            let system = PathBuf::from("C:\\Program Files\\Zoom\\bin\\Zoom.exe");
-            if system.exists() {
-                return Some(system);
-            }
-            if let Ok(appdata) = std::env::var("APPDATA") {
-                let user = PathBuf::from(appdata).join("Zoom\\bin\\Zoom.exe");
-                if user.exists() {
-                    return Some(user);
-                }
-            }
-            Some(PathBuf::from("C:\\Program Files\\Zoom\\bin\\Zoom.exe"))
-        }
-        Kind::Obs => Some(PathBuf::from(
-            "C:\\Program Files\\obs-studio\\bin\\64bit\\obs64.exe",
-        )),
-        Kind::MediaManager => Some(PathBuf::from(
-            "C:\\Program Files\\Meeting Media Manager\\Meeting Media Manager.exe",
-        )),
+        Kind::Zoom => [
+            join_all(&program_files, "Zoom\\bin\\Zoom.exe"),
+            join_all(&roaming, "Zoom\\bin\\Zoom.exe"),
+        ]
+        .concat(),
+        Kind::Obs => join_all(&program_files, "obs-studio\\bin\\64bit\\obs64.exe"),
+        Kind::MediaManager => [
+            join_all(
+                &local,
+                "Programs\\Meeting Media Manager\\Meeting Media Manager.exe",
+            ),
+            join_all(
+                &program_files,
+                "Meeting Media Manager\\Meeting Media Manager.exe",
+            ),
+        ]
+        .concat(),
     }
 }
 
+/// Returns the first candidate that exists, or the first one so error
+/// messages can still say where we looked.
+pub fn default_path(kind: Kind) -> Option<PathBuf> {
+    let all = candidates(kind);
+    all.iter()
+        .find(|p| p.exists())
+        .cloned()
+        .or_else(|| all.into_iter().next())
+}
+
 pub fn launch_app(kind: Kind, path: &Path) -> std::io::Result<()> {
-    let dir = path.parent();
     let mut cmd = Command::new(path);
-    if let Some(d) = dir {
-        cmd.current_dir(d);
+    if let Some(dir) = path.parent() {
+        cmd.current_dir(dir);
     }
-    if matches!(kind, Kind::Obs) {
-        cmd.arg("--startvirtualcam");
+    if kind == Kind::Obs {
+        cmd.arg(OBS_VIRTUAL_CAM_ARG);
     }
-    cmd_no_window(&mut cmd).spawn().map(|_| ())
+    reap(cmd_no_window(&mut cmd).spawn()?);
+    Ok(())
 }

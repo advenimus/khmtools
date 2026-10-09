@@ -24,7 +24,7 @@ pnpm tauri dev                                              # full app, hot relo
 pnpm dev                                                    # Vite only (UI without Tauri)
 
 # Test / lint
-cargo test --manifest-path src-tauri/Cargo.toml             # 12 Rust unit tests
+cargo test --manifest-path src-tauri/Cargo.toml             # Rust unit tests
 pnpm check                                                  # svelte-check
 cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
 cargo fmt --manifest-path src-tauri/Cargo.toml --all
@@ -36,7 +36,7 @@ pnpm tauri build --bundles app,updater                      # also writes .app.t
 
 Updater payloads need these env vars (in shell or `.env.local`):
 - `TAURI_SIGNING_PRIVATE_KEY` — contents of `~/.tauri/khmtools.key`
-- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` — `<redacted>` (placeholder; rotate before public release)
+- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` — from your password manager (never commit it)
 
 ## Layout
 
@@ -73,9 +73,9 @@ src-tauri/               Rust backend
 ## Architecture rules
 
 1. **All IPC goes through `src/lib/api.ts`** — never call `invoke()` directly from a route or component. If you add a Tauri command, also add its typed wrapper to `api.ts` so the frontend stays type-safe.
-2. **Pure logic lives in `src-tauri/src/domain/`** — anything testable without a Tauri context. Add unit tests in the same file under `#[cfg(test)]`. The 12 existing tests are the floor; don't ship new logic without tests.
+2. **Pure logic lives in `src-tauri/src/domain/`** — anything testable without a Tauri context. Add unit tests in the same file under `#[cfg(test)]`. Don't ship new logic without tests.
 3. **Platform branches live in `src-tauri/src/platform/`**, gated by `cfg(target_os = ...)`. Don't sprinkle `#[cfg]` through commands — call into the platform module.
-4. **Settings persistence is atomic** — `storage::save_atomic()` writes to `path.tmp` then renames. Don't bypass it with raw `fs::write` for config files.
+4. **Settings persistence is atomic** — `storage::save()` / `storage::update()` write a unique temp file, fsync it, then rename, under one process-wide lock. Use `update()` for read-modify-write. Don't bypass them with raw `fs::write`. Every settings struct uses `#[serde(default)]` so a missing field never wipes the file, and an unreadable file is renamed to `*.corrupt-<time>` instead of being overwritten.
 5. **Don't introduce new JSON files for settings** — the four files are `app.json`, `meeting.json`, `paths.json`, `media_launcher.json`. If a setting doesn't fit one of those domains, ask before adding a fifth.
 
 ## Theming
@@ -83,14 +83,15 @@ src-tauri/               Rust backend
 - Tokens in `src/app.css` under `[data-theme="light"]` / `[data-theme="dark"]`. System mode uses `@media (prefers-color-scheme)` to swap.
 - New components must reference tokens (`var(--bg)`, `var(--text)`, `var(--brand)`, etc.) — **never hard-code colors**. Tailwind classes like `bg-bg`, `text-text`, `text-text-mute`, `border-border` already wrap these.
 - Brand color is the logo's royal blue `#2563EB` (light) / `#3B82F6` (dark). Don't introduce new accent colors without a design reason.
+- Tokens are stored as RGB channels (`--brand-rgb`) so Tailwind opacity modifiers like `bg-brand/10` work. Filled buttons with white text use `brand-solid` / `danger-solid` so they pass contrast in both themes.
 
 ## Auto-update
 
-Two endpoints, picked at runtime in `commands/update.rs::endpoint_for_channel()`:
+Logic lives in `src-tauri/src/updates.rs`. Two endpoints:
 - Stable: `https://github.com/advenimus/khmtools/releases/latest/download/latest.json`
 - Beta: `https://github.com/advenimus/khmtools/releases/download/beta/latest-beta.json`
 
-Channel is read fresh on every check, so toggling stable ↔ beta in Settings takes effect without a restart. Update payloads are minisign-signed (Tauri's mechanism, separate from OS code-signing). Public key is in `tauri.conf.json`; private key + password are CI secrets.
+Stable users check stable only. Beta users check both and take the newer, so a final release supersedes earlier betas. Someone on a beta build who switches to stable is offered the stable build even if it's numbered lower. Channel is read fresh on every check. With "Install updates when I close KHM Tools" on, the update downloads in the background at startup and installs on quit (`RunEvent::Exit`). The manifest must list `darwin-aarch64`, `windows-x86_64` (the signed `-setup.exe`) and `linux-x86_64` (the signed `.AppImage`); `make-manifest.mjs` fails the release otherwise. Update payloads are minisign-signed (Tauri's mechanism, separate from OS code-signing). Public key is in `tauri.conf.json`; private key + password are CI secrets.
 
 ## Releasing
 

@@ -23,6 +23,7 @@ export interface MeetingDay {
 }
 export interface MeetingSettings {
   meeting_id: string;
+  passcode: string;
   midweek: MeetingDay;
   weekend: MeetingDay;
 }
@@ -56,6 +57,19 @@ export interface LaunchResult {
   message: string;
 }
 
+export type AppKind = "zoom" | "obs" | "media_manager";
+
+export interface MeetingInputCheck {
+  valid: boolean;
+  meeting_id: string | null;
+  has_passcode: boolean;
+  message: string | null;
+}
+
+export interface SetupStatus {
+  problems: string[];
+}
+
 export interface UpdateInfo {
   available: boolean;
   current_version: string;
@@ -82,8 +96,7 @@ export const api = {
   defaultObsPath: () => invoke<string | null>("default_obs_path"),
   defaultMediaManagerPath: () =>
     invoke<string | null>("default_media_manager_path"),
-  browseFor: (kind: "zoom" | "obs" | "media_manager") =>
-    invoke<string | null>("browse_for_app", { kind }),
+  browseFor: (kind: AppKind) => invoke<string | null>("browse_for_app", { kind }),
 
   // Media launcher
   getMediaLauncherSettings: () =>
@@ -96,6 +109,9 @@ export const api = {
   launchZoom: () => invoke<LaunchResult>("launch_zoom"),
   launchObs: () => invoke<LaunchResult>("launch_obs"),
   launchMediaManager: () => invoke<LaunchResult>("launch_media_manager"),
+  checkMeetingInput: (meetingId: string, passcode: string) =>
+    invoke<MeetingInputCheck>("check_meeting_input", { meetingId, passcode }),
+  setupStatus: () => invoke<SetupStatus>("setup_status"),
 
   // Attendance
   calculateAttendance: (poll: number[]) =>
@@ -114,7 +130,7 @@ export const api = {
   checkForUpdate: () => invoke<UpdateInfo>("check_for_update"),
   installUpdate: () => invoke<void>("install_update"),
   setUpdateChannel: (channel: UpdateChannel) =>
-    invoke<void>("set_update_channel", { channel }),
+    invoke<AppSettings>("set_update_channel", { channel }),
   appVersion: () => invoke<string>("app_version"),
 
   // External
@@ -123,3 +139,9 @@ export const api = {
   // Logs
   openLogsDir: () => invoke<void>("open_logs_dir"),
 };
+
+export function errorMessage(e: unknown): string {
+  if (typeof e === "string") return e;
+  if (e instanceof Error) return e.message;
+  return String(e);
+}

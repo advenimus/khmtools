@@ -57,7 +57,7 @@ To install: open the DMG, drag `KHM Tools.app` to `/Applications`. **Local** bui
 
 | Check | Result |
 |---|---|
-| `cargo test` | ✓ 12 / 12 pass |
+| `cargo test` | ✓ all pass |
 | `cargo clippy --all-targets -- -D warnings` | ✓ clean |
 | `cargo fmt --check` | ✓ clean |
 | `pnpm check` (svelte-check) | ✓ 234 files, 0 errors, 0 warnings |
@@ -94,7 +94,7 @@ The Settings → Updates page lets the user switch channels and triggers a confi
 Update payloads are signed by Tauri's minisign keypair (orthogonal to OS code-signing). The keypair I generated is at:
 
 - Public (committed in `tauri.conf.json`): `dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM3NzZBQzdGRDgxRTRGQTgKUldTb1R4N1lmNngyTjZHWUc1Q1FScHpDbGdYVUZ6VzdvbHBxZ3V3eS94aXR2c29TQnNYVG5VK1IK`
-- Private: `~/.tauri/khmtools.key` (password: `<redacted>` — change before any real release)
+- Private: `~/.tauri/khmtools.key` (password kept in a password manager, not in the repo)
 
 ## CI/CD release flow
 

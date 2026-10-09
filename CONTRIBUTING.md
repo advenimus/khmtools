@@ -49,7 +49,7 @@ To produce updater payloads (`.app.tar.gz` + `.sig`), export the signing env var
 
 ```bash
 export TAURI_SIGNING_PRIVATE_KEY="$(cat ~/.tauri/khmtools.key)"
-export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="<redacted>"
+export TAURI_SIGNING_PRIVATE_KEY_PASSWORD="<your key password>"
 pnpm tauri build --bundles app,updater
 ```
 

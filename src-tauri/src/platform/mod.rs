@@ -1,5 +1,9 @@
 use std::path::{Path, PathBuf};
+#[cfg(not(target_os = "macos"))]
+use std::process::Child;
 use std::process::Command;
+
+pub mod autostart;
 
 #[cfg(target_os = "macos")]
 pub mod macos;
@@ -16,11 +20,23 @@ pub mod linux;
 #[cfg(target_os = "linux")]
 use linux as imp;
 
+pub const OBS_VIRTUAL_CAM_ARG: &str = "--startvirtualcam";
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Kind {
     Zoom,
     Obs,
     MediaManager,
+}
+
+impl Kind {
+    pub fn label(self) -> &'static str {
+        match self {
+            Kind::Zoom => "Zoom",
+            Kind::Obs => "OBS",
+            Kind::MediaManager => "Meeting Media Manager",
+        }
+    }
 }
 
 pub fn default_path(kind: Kind) -> Option<PathBuf> {
@@ -31,11 +47,6 @@ pub fn launch_app(kind: Kind, path: &Path) -> std::io::Result<()> {
     imp::launch_app(kind, path)
 }
 
-pub fn launch_zoom_meeting(meeting_id: &str) -> Result<(), opener::OpenError> {
-    let url = format!("zoommtg://zoom.us/join?confno={meeting_id}");
-    opener::open(url)
-}
-
 pub fn open_url(url: &str) -> Result<(), opener::OpenError> {
     opener::open(url)
 }
@@ -44,11 +55,21 @@ pub fn open_path(path: &Path) -> Result<(), opener::OpenError> {
     opener::open(path)
 }
 
+/// Waits on the child in the background so it doesn't linger as a zombie.
+#[cfg(not(target_os = "macos"))]
+pub fn reap(child: Child) {
+    std::thread::spawn(move || {
+        let mut child = child;
+        let _ = child.wait();
+    });
+}
+
 pub fn cmd_no_window(cmd: &mut Command) -> &mut Command {
     #[cfg(target_os = "windows")]
     {
         use std::os::windows::process::CommandExt;
-        cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        cmd.creation_flags(CREATE_NO_WINDOW);
     }
     cmd
 }

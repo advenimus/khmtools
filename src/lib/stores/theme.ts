@@ -1,35 +1,31 @@
 import { writable, type Writable } from "svelte/store";
-import { invoke } from "@tauri-apps/api/core";
+import { api, type ThemeMode } from "../api";
 
-export type ThemeMode = "system" | "light" | "dark";
+export type { ThemeMode };
+
+const CACHE_KEY = "khm-theme";
 
 export const theme: Writable<ThemeMode> = writable<ThemeMode>("system");
 
 function applyTheme(mode: ThemeMode) {
   document.documentElement.setAttribute("data-theme", mode);
+  try {
+    localStorage.setItem(CACHE_KEY, mode);
+  } catch {
+    // Storage can be unavailable; the saved setting still applies on launch.
+  }
 }
 
 export function initTheme() {
-  invoke<{ theme: ThemeMode }>("get_app_settings")
-    .then((s) => {
-      const mode = s?.theme ?? "system";
-      theme.set(mode);
-      applyTheme(mode);
-    })
-    .catch(() => {
-      applyTheme("system");
-    });
-
-  theme.subscribe((mode) => applyTheme(mode));
+  theme.subscribe(applyTheme);
+  api
+    .getAppSettings()
+    .then((s) => theme.set(s.theme ?? "system"))
+    .catch((e) => console.error("Failed to load theme", e));
 }
 
 export async function setTheme(mode: ThemeMode) {
   theme.set(mode);
-  applyTheme(mode);
-  try {
-    const settings = await invoke<Record<string, unknown>>("get_app_settings");
-    await invoke("save_app_settings", { settings: { ...settings, theme: mode } });
-  } catch (e) {
-    console.error("Failed to persist theme", e);
-  }
+  const settings = await api.getAppSettings();
+  await api.saveAppSettings({ ...settings, theme: mode });
 }

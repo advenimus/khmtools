@@ -1,25 +1,35 @@
 <script lang="ts">
   import { theme, setTheme, type ThemeMode } from "../stores/theme";
+  import { pushToast } from "../stores/toasts";
+  import { errorMessage } from "../api";
 
   function next(current: ThemeMode): ThemeMode {
     return current === "system" ? "light" : current === "light" ? "dark" : "system";
+  }
+
+  async function cycle() {
+    try {
+      await setTheme(next($theme));
+    } catch (e) {
+      pushToast("danger", "Couldn't save the theme", errorMessage(e));
+    }
   }
 </script>
 
 <button
   class="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs text-text-mute hover:bg-surface-2 hover:text-text"
-  aria-label="Toggle theme"
-  onclick={() => setTheme(next($theme))}
+  aria-label="Theme: {$theme}. Click to change."
+  onclick={cycle}
 >
   {#if $theme === "system"}
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <rect x="2" y="3" width="20" height="14" rx="2"/>
       <line x1="8" y1="21" x2="16" y2="21"/>
       <line x1="12" y1="17" x2="12" y2="21"/>
     </svg>
     System
   {:else if $theme === "light"}
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="5"/>
       <line x1="12" y1="1" x2="12" y2="3"/>
       <line x1="12" y1="21" x2="12" y2="23"/>
@@ -32,7 +42,7 @@
     </svg>
     Light
   {:else}
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
     </svg>
     Dark

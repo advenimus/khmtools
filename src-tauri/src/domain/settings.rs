@@ -28,6 +28,7 @@ pub enum DefaultTool {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct AppSettings {
     pub theme: Theme,
     pub default_tool: DefaultTool,
@@ -53,22 +54,55 @@ impl Default for AppSettings {
 // ---------- Meeting ----------
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct MeetingDay {
     pub day: String,
     pub time: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct MeetingSettings {
     pub meeting_id: String,
+    pub passcode: String,
     pub midweek: MeetingDay,
     pub weekend: MeetingDay,
+}
+
+impl Default for MeetingDay {
+    fn default() -> Self {
+        Self {
+            day: "sunday".into(),
+            time: "10:00".into(),
+        }
+    }
+}
+
+impl MeetingDay {
+    fn normalized(self) -> Self {
+        Self {
+            day: self.day.trim().to_ascii_lowercase(),
+            time: self.time.trim().to_string(),
+        }
+    }
+}
+
+impl MeetingSettings {
+    pub fn normalized(self) -> Self {
+        Self {
+            meeting_id: self.meeting_id.trim().to_string(),
+            passcode: self.passcode.trim().to_string(),
+            midweek: self.midweek.normalized(),
+            weekend: self.weekend.normalized(),
+        }
+    }
 }
 
 impl Default for MeetingSettings {
     fn default() -> Self {
         Self {
             meeting_id: String::new(),
+            passcode: String::new(),
             midweek: MeetingDay {
                 day: "tuesday".into(),
                 time: "19:30".into(),
@@ -84,6 +118,7 @@ impl Default for MeetingSettings {
 // ---------- Paths ----------
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct AppPaths {
     pub zoom: Option<PathBuf>,
     pub obs: Option<PathBuf>,
@@ -101,6 +136,7 @@ pub enum CustomMessageDisplay {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct LaunchToggles {
     pub launch_obs: bool,
     pub launch_media_manager: bool,
@@ -118,6 +154,7 @@ impl Default for LaunchToggles {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct CustomMessage {
     pub display_when: CustomMessageDisplay,
     pub title: String,
@@ -137,9 +174,29 @@ impl Default for CustomMessage {
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct MediaLauncherSettings {
     pub toggles: LaunchToggles,
     pub custom_message: CustomMessage,
+}
+
+pub const MIN_DISPLAY_SECONDS: u32 = 1;
+pub const MAX_DISPLAY_SECONDS: u32 = 60;
+
+impl MediaLauncherSettings {
+    pub fn clamped(self) -> Self {
+        let seconds = self
+            .custom_message
+            .display_time_seconds
+            .clamp(MIN_DISPLAY_SECONDS, MAX_DISPLAY_SECONDS);
+        Self {
+            custom_message: CustomMessage {
+                display_time_seconds: seconds,
+                ..self.custom_message
+            },
+            ..self
+        }
+    }
 }
 
 // ---------- File names ----------
@@ -175,6 +232,63 @@ mod tests {
         let ml = MediaLauncherSettings::default();
         let json = serde_json::to_string(&ml).unwrap();
         let _: MediaLauncherSettings = serde_json::from_str(&json).unwrap();
+    }
+
+    #[test]
+    fn missing_fields_fall_back_to_defaults() {
+        let app: AppSettings = serde_json::from_str(r#"{"theme":"dark"}"#).unwrap();
+        assert!(matches!(app.theme, Theme::Dark));
+        assert_eq!(app.update_channel, UpdateChannel::Stable);
+
+        let m: MeetingSettings = serde_json::from_str(r#"{"meeting_id":"123456789"}"#).unwrap();
+        assert_eq!(m.meeting_id, "123456789");
+        assert_eq!(m.passcode, "");
+        assert_eq!(m.weekend.day, "sunday");
+
+        let ml: MediaLauncherSettings =
+            serde_json::from_str(r#"{"toggles":{"launch_obs":true}}"#).unwrap();
+        assert!(ml.toggles.launch_obs);
+        assert!(ml.toggles.launch_zoom);
+        assert_eq!(ml.custom_message.display_time_seconds, 5);
+    }
+
+    #[test]
+    fn display_time_is_clamped() {
+        let mut ml = MediaLauncherSettings::default();
+        ml.custom_message.display_time_seconds = 99_999;
+        assert_eq!(
+            ml.clamped().custom_message.display_time_seconds,
+            MAX_DISPLAY_SECONDS
+        );
+
+        let mut ml = MediaLauncherSettings::default();
+        ml.custom_message.display_time_seconds = 0;
+        assert_eq!(
+            ml.clamped().custom_message.display_time_seconds,
+            MIN_DISPLAY_SECONDS
+        );
+    }
+
+    #[test]
+    fn meeting_days_are_normalized() {
+        let m = MeetingSettings {
+            meeting_id: " 123 ".into(),
+            passcode: " abc ".into(),
+            midweek: MeetingDay {
+                day: " Tuesday ".into(),
+                time: "19:30 ".into(),
+            },
+            weekend: MeetingDay {
+                day: "SUNDAY".into(),
+                time: "10:00".into(),
+            },
+        }
+        .normalized();
+        assert_eq!(m.meeting_id, "123");
+        assert_eq!(m.passcode, "abc");
+        assert_eq!(m.midweek.day, "tuesday");
+        assert_eq!(m.midweek.time, "19:30");
+        assert_eq!(m.weekend.day, "sunday");
     }
 
     #[test]

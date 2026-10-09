@@ -1,11 +1,4 @@
-//! Sets the macOS Dock icon and label at runtime.
-//!
-//! In production this would come from the bundled `.app`'s Info.plist, but
-//! `tauri dev` runs the binary raw so the Dock falls back to a generic icon
-//! and shows the binary name (`khmtools`) as the label. We embed
-//! `icons/icon.icns` at compile time, call `NSApplication.setApplicationIconImage:`,
-//! and force `NSProcessInfo.processName` to the product name so dev and prod
-//! look the same.
+// `tauri dev` runs the raw binary, so set the Dock icon and name by hand.
 
 #[cfg(target_os = "macos")]
 const ICON_BYTES: &[u8] = include_bytes!("../icons/icon.icns");

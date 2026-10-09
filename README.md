@@ -15,7 +15,7 @@ Launches [OBS Studio](https://obsproject.com), [Meeting Media Manager (M³)](#wo
 Opens Zoom and joins your configured meeting directly. Handy for Zoom attendant computers that only need that one step.
 
 ### Attendance Calculator
-Paste your Zoom poll responses and get a clean combined count in seconds — no spreadsheet needed.
+Type in your Zoom poll results and get the combined attendance count in seconds. No spreadsheet needed.
 
 ### Guided Setup (Onboarding)
 A 7-step wizard walks first-time users through connecting their meeting schedule, Zoom meeting ID, and application paths. Anyone on the AV desk can complete it.

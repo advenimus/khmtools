@@ -1,4 +1,4 @@
-import { writable, derived } from "svelte/store";
+import { writable } from "svelte/store";
 
 export type Route =
   | "dashboard"
@@ -26,12 +26,15 @@ export const route = writable<Route>(readHash());
 
 window.addEventListener("hashchange", () => route.set(readHash()));
 
-export function navigate(r: Route) {
-  if (window.location.hash !== `#${r}`) {
-    window.location.hash = `#${r}`;
+/** `replace` swaps the current history entry so Back can't return to it. */
+export function navigate(r: Route, { replace = false } = {}) {
+  const hash = `#${r}`;
+  if (replace) {
+    history.replaceState(null, "", hash);
+    route.set(r);
+  } else if (window.location.hash !== hash) {
+    window.location.hash = hash;
   } else {
     route.set(r);
   }
 }
-
-export const isOnboarding = derived(route, ($r) => $r === "onboarding");

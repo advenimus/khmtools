@@ -3,21 +3,34 @@
     checked?: boolean;
     label?: string;
     description?: string;
+    disabled?: boolean;
     onchange?: (checked: boolean) => void;
   }
-  let { checked = $bindable(false), label = "", description = "", onchange }: Props = $props();
+  let {
+    checked = $bindable(false),
+    label = "",
+    description = "",
+    disabled = false,
+    onchange,
+  }: Props = $props();
+
+  const uid = Math.random().toString(36).slice(2);
+  const labelId = `toggle-label-${uid}`;
+  const descId = `toggle-desc-${uid}`;
 </script>
 
-<label class="flex cursor-pointer items-start gap-3">
+<div class="flex items-start gap-3" class:opacity-60={disabled}>
   <button
     type="button"
     role="switch"
-    aria-label={label || "Toggle"}
     aria-checked={checked}
+    aria-labelledby={labelId}
+    aria-describedby={description ? descId : undefined}
+    {disabled}
     onclick={() => { checked = !checked; onchange?.(checked); }}
-    class="relative mt-0.5 h-5 w-9 shrink-0 rounded-full border border-border transition"
-    class:bg-brand={checked}
-    class:bg-surface-2={!checked}
+    class="relative mt-0.5 h-5 w-9 shrink-0 rounded-full border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 disabled:cursor-not-allowed {checked
+      ? 'border-brand-solid bg-brand-solid'
+      : 'border-control-off bg-surface-2'}"
   >
     <span
       class="absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all"
@@ -26,9 +39,16 @@
     ></span>
   </button>
   <div class="flex-1">
-    <div class="text-sm text-text">{label}</div>
+    <button
+      type="button"
+      id={labelId}
+      class="text-left text-sm text-text"
+      tabindex="-1"
+      {disabled}
+      onclick={() => { checked = !checked; onchange?.(checked); }}
+    >{label}</button>
     {#if description}
-      <div class="text-xs text-text-mute">{description}</div>
+      <div id={descId} class="text-xs text-text-mute">{description}</div>
     {/if}
   </div>
-</label>
+</div>
